@@ -81,19 +81,30 @@ export default function AICommandCenter() {
     }
   }, []);
 
-  // Get knowledge base grouped by docType
+  // Get knowledge base grouped by docType, then by documentTitle with section counts
   const docsByType = useMemo(() => {
-    const grouped: Record<string, typeof KNOWLEDGE_BASE> = {};
+    // First group sections by docType → documentTitle
+    const byType: Record<string, Record<string, number>> = {};
 
-    KNOWLEDGE_BASE.forEach((doc) => {
-      const docType = doc.docType || 'general';
-      if (!grouped[docType]) {
-        grouped[docType] = [];
+    KNOWLEDGE_BASE.forEach((section) => {
+      const docType = section.docType || 'general';
+      if (!byType[docType]) {
+        byType[docType] = {};
       }
-      grouped[docType].push(doc);
+      const title = section.documentTitle || section.sectionTitle;
+      byType[docType][title] = (byType[docType][title] || 0) + 1;
     });
 
-    return grouped;
+    // Convert to array format: { title, sectionCount }[]
+    const result: Record<string, { title: string; sectionCount: number }[]> = {};
+    Object.entries(byType).forEach(([docType, docs]) => {
+      result[docType] = Object.entries(docs).map(([title, count]) => ({
+        title,
+        sectionCount: count,
+      }));
+    });
+
+    return result;
   }, []);
 
   const handleSendMessage = () => {
@@ -371,7 +382,7 @@ export default function AICommandCenter() {
                             <div>
                               <p className="font-medium">{doc.title}</p>
                               <p className={isDark ? 'text-slate-400' : 'text-gray-600'}>
-                                {doc.sections?.length || 0} sections
+                                {doc.sectionCount} {doc.sectionCount === 1 ? 'section' : 'sections'}
                               </p>
                             </div>
                           </div>
