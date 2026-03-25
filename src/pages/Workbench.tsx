@@ -346,7 +346,9 @@ export default function Workbench() {
 
       <div className="flex gap-6 h-[calc(100vh-260px)]">
         {/* LEFT PANEL: Scenario Builder */}
-        <div className="w-2/5 flex flex-col gap-6 overflow-y-auto pb-6">
+        <div className="w-2/5 flex flex-col overflow-hidden">
+          {/* Scrollable form area */}
+          <div className="flex-1 overflow-y-auto space-y-6 pb-4">
           {/* Scenario Form */}
           <Card className="bg-navy-900 border-slate-700 p-6">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
@@ -536,15 +538,6 @@ export default function Workbench() {
               </div>
             </div>
 
-            <RequirePermission permission="workbench:execute">
-              <button
-                onClick={calculateScores}
-                className="w-full mt-6 px-4 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base shadow-lg shadow-cyan-600/20"
-              >
-                <TrendingUp className="w-5 h-5" />
-                Run Assessment
-              </button>
-            </RequirePermission>
           </Card>
 
           {/* Pre-built Scenarios */}
@@ -566,6 +559,20 @@ export default function Workbench() {
                 </button>
               ))}
             </div>
+          </div>
+          </div>
+
+          {/* Sticky Run Assessment Button — always visible */}
+          <div className="pt-3 border-t border-slate-700 mt-2">
+            <RequirePermission permission="workbench:execute">
+              <button
+                onClick={calculateScores}
+                className="w-full px-4 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base shadow-lg shadow-cyan-600/20"
+              >
+                <TrendingUp className="w-5 h-5" />
+                Run Assessment
+              </button>
+            </RequirePermission>
           </div>
         </div>
 
