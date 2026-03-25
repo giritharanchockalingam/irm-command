@@ -25,8 +25,8 @@ export class TemplateEngine {
     const { config } = useIndustryStore.getState();
     return {
       narrativeTone: config.narrativeTone,
-      label: config.label,
-      riskCategories: config.riskCategories || [],
+      label: config.shortName,
+      riskCategories: (config.riskCategories || []).map((c: any) => c.label || c.id),
     };
   }
 

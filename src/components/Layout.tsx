@@ -284,7 +284,7 @@ function Layout() {
             isDark ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-cyan-50 text-cyan-700 border border-cyan-200'
           }`}>
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-            {industryConfig?.label} Vertical
+            {industryConfig?.shortName || 'Banking'} Vertical
           </div>
         )}
 

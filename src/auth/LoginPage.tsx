@@ -226,7 +226,7 @@ export default function LoginPage() {
                     }`}
                   >
                     <Icon size={16} />
-                    <span className="font-medium truncate w-full text-center">{ind.label}</span>
+                    <span className="font-medium truncate w-full text-center">{ind.shortName}</span>
                   </button>
                 );
               })}

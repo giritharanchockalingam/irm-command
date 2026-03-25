@@ -49,38 +49,66 @@ interface FactorContribution {
   contribution: number;
 }
 
-const BUSINESS_LINES = [
-  'Global Markets',
-  'Retail Banking',
-  'Commercial Banking',
-  'Wealth Management',
-  'Treasury',
-  'Operations',
-  'Technology',
-];
+import { type IndustryId } from '../config/industries';
 
-const PRODUCTS_BY_LINE: Record<string, string[]> = {
-  'Global Markets': ['Derivatives', 'Fixed Income', 'Equities', 'FX'],
-  'Retail Banking': ['Mortgages', 'Credit Cards', 'Deposits', 'Auto Loans'],
-  'Commercial Banking': ['Loans', 'Trade Finance', 'Syndication', 'CRE'],
-  'Wealth Management': ['Private Banking', 'Asset Management', 'Advisory', 'Brokerage'],
-  'Treasury': ['Liquidity Management', 'Capital Markets', 'FX Trading', 'Repo'],
-  'Operations': ['Payment Systems', 'Settlements', 'Custody', 'Vendor Mgmt'],
-  'Technology': ['Infrastructure', 'Application Dev', 'Cloud Services', 'Data'],
+// Industry-aware configuration — populated dynamically in the component
+const INDUSTRY_BUSINESS_LINES: Record<IndustryId, string[]> = {
+  banking: ['Global Markets', 'Retail Banking', 'Commercial Banking', 'Wealth Management', 'Treasury', 'Operations', 'Technology'],
+  healthcare: ['Clinical Operations', 'Health IT', 'Patient Services', 'Research & Development', 'Pharmacy', 'Operations', 'Compliance'],
+  technology: ['Engineering', 'Product', 'Data Science', 'Security', 'Infrastructure', 'Operations', 'Compliance'],
+  energy: ['Generation', 'Transmission', 'Distribution', 'Trading', 'Exploration', 'Operations', 'Compliance'],
+  manufacturing: ['Production', 'Supply Chain', 'Quality Assurance', 'Logistics', 'R&D', 'Operations', 'Compliance'],
+};
+
+const INDUSTRY_PRODUCTS: Record<IndustryId, Record<string, string[]>> = {
+  banking: {
+    'Global Markets': ['Derivatives', 'Fixed Income', 'Equities', 'FX'],
+    'Retail Banking': ['Mortgages', 'Credit Cards', 'Deposits', 'Auto Loans'],
+    'Commercial Banking': ['Loans', 'Trade Finance', 'Syndication', 'CRE'],
+    'Wealth Management': ['Private Banking', 'Asset Management', 'Advisory', 'Brokerage'],
+    'Treasury': ['Liquidity Management', 'Capital Markets', 'FX Trading', 'Repo'],
+    'Operations': ['Payment Systems', 'Settlements', 'Custody', 'Vendor Mgmt'],
+    'Technology': ['Infrastructure', 'Application Dev', 'Cloud Services', 'Data'],
+  },
+  healthcare: {
+    'Clinical Operations': ['Inpatient Care', 'Outpatient Services', 'Emergency Medicine', 'Telehealth'],
+    'Health IT': ['EHR Systems', 'PACS/Imaging', 'HIE Integration', 'Patient Portal'],
+    'Patient Services': ['Billing', 'Registration', 'Patient Access', 'Insurance Verification'],
+    'Research & Development': ['Clinical Trials', 'IRB Studies', 'Genomics', 'Drug Development'],
+    'Pharmacy': ['Dispensing', 'Formulary Mgmt', 'Controlled Substances', 'Compounding'],
+    'Operations': ['Facility Mgmt', 'Supply Chain', 'Staffing', 'Quality'],
+    'Compliance': ['HIPAA Privacy', 'HIPAA Security', 'Billing Compliance', 'Accreditation'],
+  },
+  technology: {
+    'Engineering': ['Backend Services', 'Frontend Apps', 'Mobile', 'ML/AI Pipelines'],
+    'Product': ['SaaS Platform', 'API Products', 'Marketplace', 'Enterprise Tools'],
+    'Data Science': ['Analytics', 'ML Models', 'Data Pipelines', 'Experimentation'],
+    'Security': ['AppSec', 'Infrastructure Sec', 'Identity & Access', 'Threat Intel'],
+    'Infrastructure': ['Cloud (AWS/GCP)', 'Kubernetes', 'Networking', 'Observability'],
+    'Operations': ['SRE/Reliability', 'Incident Response', 'Change Mgmt', 'Vendor Mgmt'],
+    'Compliance': ['SOC 2', 'GDPR', 'CCPA', 'ISO 27001'],
+  },
+  energy: {
+    'Generation': ['Natural Gas', 'Renewables', 'Nuclear', 'Coal'],
+    'Transmission': ['High Voltage Lines', 'Substations', 'Grid Control', 'Interconnections'],
+    'Distribution': ['Smart Grid', 'Metering', 'Customer Delivery', 'Outage Mgmt'],
+    'Trading': ['Power Markets', 'Gas Markets', 'Hedging', 'Carbon Credits'],
+    'Exploration': ['Drilling', 'Seismic', 'Reserves Estimation', 'Field Development'],
+    'Operations': ['SCADA Systems', 'Pipeline Ops', 'Maintenance', 'Environmental'],
+    'Compliance': ['NERC CIP', 'EPA', 'DOT PHMSA', 'State PUC'],
+  },
+  manufacturing: {
+    'Production': ['Assembly Lines', 'CNC/Machining', 'Casting/Molding', 'Packaging'],
+    'Supply Chain': ['Raw Materials', 'Logistics', 'Warehousing', 'Procurement'],
+    'Quality Assurance': ['Incoming Inspection', 'In-Process QC', 'Final Audit', 'Metrology'],
+    'Logistics': ['Shipping', 'Freight', 'Distribution Centers', 'Last Mile'],
+    'R&D': ['Product Design', 'Prototyping', 'Testing', 'Materials Science'],
+    'Operations': ['Maintenance', 'EHS', 'Utilities', 'Facility Mgmt'],
+    'Compliance': ['ISO 9001', 'ISO 45001', 'OSHA', 'EPA'],
+  },
 };
 
 const GEOGRAPHIES = ['North America', 'EMEA', 'APAC', 'LATAM', 'Global'];
-
-const RISK_TYPES = [
-  'Credit',
-  'Market',
-  'Operational',
-  'Compliance',
-  'Cyber',
-  'ThirdParty',
-  'Strategic',
-  'Liquidity',
-];
 
 const ADDITIONAL_FACTORS_OPTIONS = [
   { label: 'Regulatory scrutiny', value: 'regulatoryScrutiny', adjustment: 0.3 },
@@ -162,18 +190,27 @@ const getScoreBgColor = (score: number): string => {
 export default function Workbench() {
   const { can: canPerform } = useSecurity();
   const isDark = useThemeStore((state) => state.isDark);
-  const industryId = useIndustryStore((s) => s.industryId);
+  const { industryId, config: industryConfig } = useIndustryStore();
 
   const dal = getDataAccess();
   const riskScenarios = dal.getRiskScenarios();
   const risks = dal.getRisks();
 
+  // Industry-aware dropdown values
+  const BUSINESS_LINES = INDUSTRY_BUSINESS_LINES[industryId] || INDUSTRY_BUSINESS_LINES.banking;
+  const PRODUCTS_BY_LINE = INDUSTRY_PRODUCTS[industryId] || INDUSTRY_PRODUCTS.banking;
+  const RISK_TYPES = industryConfig.riskCategories.map(c => c.id);
+
+  const defaultBizLine = BUSINESS_LINES[0] || 'Operations';
+  const defaultProduct = (PRODUCTS_BY_LINE[defaultBizLine] || [])[0] || '';
+  const defaultRiskType = RISK_TYPES[0] || 'Operational';
+
   const [formData, setFormData] = useState<FormData>({
     scenarioName: 'New Risk Scenario',
-    businessLine: 'Commercial Banking',
-    product: 'Loans',
+    businessLine: defaultBizLine,
+    product: defaultProduct,
     geography: 'North America',
-    riskType: 'Credit',
+    riskType: defaultRiskType,
     inherentRisk: 3,
     controlStrength: 3,
     lossHistory: 0,
@@ -719,26 +756,17 @@ export default function Workbench() {
               </button>
             </>
           ) : (
-            <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-12 flex items-center justify-center`}>
-              <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-cyan-600/10 border-2 border-cyan-600/30 flex items-center justify-center">
-                  <Zap className="w-10 h-10 text-cyan-400" />
-                </div>
-                <p className={`${isDark ? 'text-white' : 'text-slate-900'} text-xl font-semibold mb-2`}>Assessment Results</p>
-                <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} text-sm mb-6 max-w-md leading-relaxed`}>
-                  Configure your risk scenario in the left panel — select a business line,
-                  product, geography, and risk type — then click the button below to generate
-                  a composite risk score with AI-powered analysis.
-                </p>
-                <button
-                  onClick={calculateScores}
-                  className="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 mx-auto text-base shadow-lg shadow-cyan-600/20"
-                >
-                  <TrendingUp className="w-5 h-5" />
-                  Run Assessment
-                </button>
+            <div className={`${isDark ? 'bg-navy-900/50 border-slate-700/50' : 'bg-gray-50 border-gray-200'} border border-dashed rounded-lg p-6 flex items-center gap-4`}>
+              <div className="w-12 h-12 rounded-full bg-cyan-600/10 border border-cyan-600/20 flex items-center justify-center flex-shrink-0">
+                <Zap className="w-6 h-6 text-cyan-400" />
               </div>
-            </Card>
+              <div>
+                <p className={`${isDark ? 'text-slate-200' : 'text-slate-700'} text-sm font-medium`}>Assessment Results</p>
+                <p className={`${isDark ? 'text-slate-400' : 'text-slate-500'} text-xs mt-0.5`}>
+                  Configure your scenario on the left and click Run Assessment to generate a composite risk score.
+                </p>
+              </div>
+            </div>
           )}
         </div>
       </div>
