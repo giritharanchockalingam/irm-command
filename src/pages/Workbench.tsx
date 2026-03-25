@@ -8,6 +8,11 @@ import {
   AlertCircle,
   TrendingUp,
   Zap,
+  FileText,
+  Shield,
+  BarChart3,
+  Target,
+  ClipboardList,
 } from 'lucide-react';
 import { useSecurity, RequirePermission } from '../security/SecurityContext';
 import { getDataAccess } from '../data/DataAccessLayer';
@@ -695,20 +700,198 @@ export default function Workbench() {
                 )}
               </Card>
 
-              {/* AI Assessment Narrative */}
-              <Card className="bg-navy-900 border-slate-700 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white">AI Risk Assessment</h3>
+              {/* AI Assessment Narrative — Formatted */}
+              <Card className="bg-navy-900 border-slate-700 p-0 overflow-hidden">
+                {/* Header bar */}
+                <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-navy-900 via-navy-800 to-navy-900 border-b border-slate-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-cyan-600/15 border border-cyan-500/30 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">AI Risk Assessment</h3>
+                      <p className="text-xs text-slate-400">OCC/FDIC-style narrative • Auto-generated</p>
+                    </div>
+                  </div>
                   <button
                     onClick={handleRegenerate}
-                    className="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
+                    className="text-sm px-4 py-1.5 bg-cyan-600/15 hover:bg-cyan-600/25 border border-cyan-500/30 text-cyan-400 rounded-lg transition flex items-center gap-1.5"
                   >
+                    <RotateCcw className="w-3.5 h-3.5" />
                     Regenerate
                   </button>
                 </div>
-                <div className="text-slate-200 text-sm leading-relaxed">
-                  <StreamingText text={scoringResult.narrative} />
-                </div>
+
+                {(() => {
+                  // Parse the narrative into structured sections
+                  const narrative = scoringResult.narrative;
+                  const sections = narrative.split(/\n\n/).filter(Boolean);
+
+                  // Extract the title line
+                  const titleLine = sections[0]?.replace('RISK ASSESSMENT NARRATIVE - ', '') || formData.scenarioName;
+
+                  // Parse scenario overview key/value pairs
+                  const overviewSection = sections.find(s => s.startsWith('Risk Scenario:') || s.includes('Business Line:'));
+                  const overviewLines = overviewSection?.split('\n').filter(l => l.includes(':')) || [];
+                  const overviewKV: Record<string, string> = {};
+                  overviewLines.forEach(line => {
+                    const [k, ...rest] = line.split(':');
+                    if (k && rest.length) overviewKV[k.trim()] = rest.join(':').trim();
+                  });
+
+                  // Parse assessment metrics (bullet points starting with •)
+                  const assessmentSection = sections.find(s => s.includes('assessed as follows'));
+                  const metricLines = assessmentSection?.split('\n').filter(l => l.trim().startsWith('•')) || [];
+                  const metrics = metricLines.map(l => {
+                    const clean = l.replace('•', '').trim();
+                    const [label, value] = clean.split(':').map(s => s.trim());
+                    return { label: label || '', value: value || '' };
+                  });
+
+                  // Parse the rating reflection paragraph
+                  const ratingParagraph = assessmentSection?.split('\n').find(l => l.startsWith('This rating reflects'));
+
+                  // Parse driver analysis
+                  const driverSection = sections.find(s => s.includes('RISK SCORE DRIVER ANALYSIS') || s.includes('composite risk score of'));
+                  const driverIntro = driverSection?.split('\n').find(l => l.includes('composite risk score'));
+                  const driverBullets = driverSection?.split('\n').filter(l => l.trim().startsWith('•')) || [];
+                  const driverConclusion = driverSection?.split('\n').find(l => l.includes('key drivers of risk'));
+
+                  // Parse residual risk profile
+                  const residualSection = sections.find(s => s.includes('RESIDUAL RISK PROFILE') || s.includes('Following the application'));
+                  const residualText = residualSection?.replace('RESIDUAL RISK PROFILE\n', '').trim();
+
+                  // Parse remediation
+                  const remediationSection = sections.find(s => s.includes('REMEDIATION AND MONITORING') || s.includes('Management should'));
+                  const remediationText = remediationSection?.replace('REMEDIATION AND MONITORING EXPECTATIONS\n', '').trim();
+
+                  const sectionIconClass = "w-4 h-4";
+
+                  return (
+                    <div className="px-6 py-5 space-y-6">
+                      {/* Title badge */}
+                      <div className="flex items-center gap-2">
+                        <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/40 to-transparent" />
+                        <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider px-3 py-1 bg-cyan-600/10 rounded-full border border-cyan-500/20">
+                          {titleLine}
+                        </span>
+                        <div className="h-px flex-1 bg-gradient-to-l from-cyan-500/40 to-transparent" />
+                      </div>
+
+                      {/* Scenario Overview — Key/Value Grid */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <ClipboardList className={`${sectionIconClass} text-blue-400`} />
+                          <h4 className="text-sm font-semibold text-blue-400 uppercase tracking-wide">Scenario Overview</h4>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {Object.entries(overviewKV).map(([key, val]) => (
+                            <div key={key} className="bg-navy-800/60 rounded-lg px-3 py-2 border border-slate-700/50">
+                              <span className="text-xs text-slate-400 block">{key}</span>
+                              <span className="text-sm text-white font-medium">{val}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Assessment Metrics — Horizontal Cards */}
+                      {metrics.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Target className={`${sectionIconClass} text-amber-400`} />
+                            <h4 className="text-sm font-semibold text-amber-400 uppercase tracking-wide">Assessment Ratings</h4>
+                          </div>
+                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                            {metrics.map((m, i) => {
+                              // Color-code based on label
+                              const isRisk = m.label.toLowerCase().includes('risk');
+                              const isControl = m.label.toLowerCase().includes('control');
+                              const isLoss = m.label.toLowerCase().includes('loss');
+                              const isScore = m.label.toLowerCase().includes('score');
+                              const accentColor = isLoss ? 'from-purple-500/20 to-purple-600/5 border-purple-500/30'
+                                : isScore ? 'from-cyan-500/20 to-cyan-600/5 border-cyan-500/30'
+                                : isControl ? 'from-green-500/20 to-green-600/5 border-green-500/30'
+                                : isRisk ? 'from-orange-500/20 to-orange-600/5 border-orange-500/30'
+                                : 'from-slate-500/20 to-slate-600/5 border-slate-500/30';
+                              const textColor = isLoss ? 'text-purple-300'
+                                : isScore ? 'text-cyan-300'
+                                : isControl ? 'text-green-300'
+                                : isRisk ? 'text-orange-300'
+                                : 'text-slate-300';
+
+                              return (
+                                <div key={i} className={`bg-gradient-to-br ${accentColor} rounded-lg px-3 py-2.5 border`}>
+                                  <span className="text-xs text-slate-400 block mb-0.5">{m.label}</span>
+                                  <span className={`text-base font-bold ${textColor}`}>{m.value}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {ratingParagraph && (
+                            <p className="text-xs text-slate-400 mt-2 leading-relaxed italic">{ratingParagraph}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Risk Score Driver Analysis */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <BarChart3 className={`${sectionIconClass} text-emerald-400`} />
+                          <h4 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide">Risk Score Driver Analysis</h4>
+                        </div>
+                        {driverIntro && (
+                          <p className="text-sm text-slate-300 mb-3 leading-relaxed">{driverIntro}</p>
+                        )}
+                        {driverBullets.length > 0 && (
+                          <div className="space-y-1.5 mb-3">
+                            {driverBullets.map((bullet, i) => {
+                              const clean = bullet.replace('•', '').trim();
+                              const [name, ...details] = clean.split(':');
+                              return (
+                                <div key={i} className="flex items-start gap-2 bg-navy-800/40 rounded-lg px-3 py-2 border border-slate-700/40">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                                  <div className="text-sm">
+                                    <span className="text-white font-medium">{name}</span>
+                                    {details.length > 0 && <span className="text-slate-400">: {details.join(':')}</span>}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {driverConclusion && (
+                          <p className="text-sm text-slate-300 leading-relaxed">{driverConclusion}</p>
+                        )}
+                      </div>
+
+                      {/* Residual Risk Profile */}
+                      {residualText && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Shield className={`${sectionIconClass} text-rose-400`} />
+                            <h4 className="text-sm font-semibold text-rose-400 uppercase tracking-wide">Residual Risk Profile</h4>
+                          </div>
+                          <div className="bg-gradient-to-br from-rose-500/5 to-transparent rounded-lg px-4 py-3 border border-rose-500/20">
+                            <p className="text-sm text-slate-200 leading-relaxed">{residualText}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Remediation & Monitoring */}
+                      {remediationText && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <AlertCircle className={`${sectionIconClass} text-yellow-400`} />
+                            <h4 className="text-sm font-semibold text-yellow-400 uppercase tracking-wide">Remediation & Monitoring Expectations</h4>
+                          </div>
+                          <div className="bg-gradient-to-br from-yellow-500/5 to-transparent rounded-lg px-4 py-3 border border-yellow-500/20">
+                            <p className="text-sm text-slate-200 leading-relaxed">{remediationText}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </Card>
 
               {/* Export Button */}
