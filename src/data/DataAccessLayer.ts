@@ -221,14 +221,19 @@ class InMemoryDataAccess implements DataAccessLayer {
   }
 
   /**
-   * Filter data by tenant ID if provided
+   * Filter data by tenant ID if provided.
+   * If items don't have a tenantId field (e.g. seed data), return all items unfiltered.
    */
-  private filterByTenant<T extends { tenantId: string }>(
+  private filterByTenant<T>(
     items: T[],
     tenantId?: string
   ): T[] {
     const id = tenantId || this.tenantId;
-    return items.filter((item) => item.tenantId === id);
+    // If the first item doesn't have a tenantId property, skip filtering (seed data)
+    if (items.length === 0 || !('tenantId' in (items[0] as Record<string, unknown>))) {
+      return items;
+    }
+    return items.filter((item) => (item as Record<string, unknown>).tenantId === id);
   }
 
   // ===== Risk Methods =====
