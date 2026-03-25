@@ -60,14 +60,14 @@ function ModuleBoundary({ module, children }: { module: string; children: React.
  * beyond simple authentication.
  */
 function RequireRoutePermission({ path, children }: { path: string; children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, claims } = useAuth();
   const { isDark } = useThemeStore();
 
   if (!user) {
     return <LoginPage />;
   }
 
-  const decision = authorizeRoute(user, path);
+  const decision = authorizeRoute(claims, path);
 
   if (!decision.allowed) {
     return (
