@@ -245,13 +245,13 @@ function Layout() {
         </nav>
 
         {/* Collapse toggle */}
-        <div className={`p-3 ${isDark ? 'border-slate-700' : 'border-gray-200'} border-t`}>
+        <div className={`px-3 pb-10 pt-2 ${isDark ? 'border-slate-700' : 'border-gray-200'} border-t`}>
           <button
             onClick={() => setSidebarExpanded(!sidebarExpanded)}
-            className={`w-full flex items-center ${sidebarExpanded ? 'justify-start pl-3 gap-2' : 'justify-center'} p-2 rounded-lg ${isDark ? 'hover:bg-navy-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'} transition-colors`}
+            className={`w-full flex items-center ${sidebarExpanded ? 'justify-start pl-3 gap-2' : 'justify-center'} py-1.5 rounded-lg ${isDark ? 'hover:bg-navy-800 text-slate-400 hover:text-slate-200' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'} transition-colors`}
             title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           >
-            {sidebarExpanded ? <ChevronLeft size={18} /> : <Menu size={20} />}
+            {sidebarExpanded ? <ChevronLeft size={16} /> : <Menu size={18} />}
             {sidebarExpanded && <span className="text-xs font-medium">Collapse</span>}
           </button>
         </div>
