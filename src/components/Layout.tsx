@@ -12,6 +12,7 @@ import {
   Moon,
   Bell,
   ChevronRight,
+  ChevronLeft,
   ClipboardCheck,
   LogOut,
   Brain,
@@ -149,7 +150,7 @@ function CopilotSidePanel({ isDark, onClose }: { isDark: boolean; onClose: () =>
         )}
       </div>
 
-      <div className={`p-4 ${isDark ? 'border-slate-700' : 'border-gray-200'} border-t`}>
+      <div className={`p-4 pb-8 ${isDark ? 'border-slate-700' : 'border-gray-200'} border-t`}>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -249,7 +250,7 @@ function Layout() {
             onClick={() => setSidebarExpanded(!sidebarExpanded)}
             className={`w-full flex items-center justify-center p-2 rounded-lg ${isDark ? 'hover:bg-navy-800' : 'hover:bg-gray-100'} transition-colors`}
           >
-            {sidebarExpanded ? <X size={20} /> : <Menu size={20} />}
+            {sidebarExpanded ? <ChevronLeft size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </aside>
@@ -333,7 +334,7 @@ function Layout() {
       {/* Copilot floating button */}
       <button
         onClick={toggleCopilot}
-        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full ${
+        className={`fixed bottom-12 right-6 w-14 h-14 rounded-full ${
           isDark ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-cyan-500 hover:bg-cyan-600'
         } text-white flex items-center justify-center shadow-lg ${copilotOpen ? 'alert-pulse' : ''} transition-all`}
       >
