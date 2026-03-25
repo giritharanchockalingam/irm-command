@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import RiskNarrativeCard from '../components/RiskNarrativeCard';
 import { useSecurity, RequirePermission } from '../security/SecurityContext';
+import { useThemeStore } from '../store/themeStore';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { RiskScenario } from '../domain/types';
 import { TemplateEngine } from '../ai/local/templateEngine';
@@ -159,6 +160,7 @@ const getScoreBgColor = (score: number): string => {
 
 export default function Workbench() {
   const { can: canPerform } = useSecurity();
+  const isDark = useThemeStore((state) => state.isDark);
 
   const dal = getDataAccess();
   const riskScenarios = dal.getRiskScenarios();
@@ -328,15 +330,15 @@ export default function Workbench() {
   }, [calculateScores]);
 
   return (
-    <div className="min-h-screen bg-navy-950 text-gray-100 p-6">
+    <div className={`min-h-screen ${isDark ? 'bg-navy-950 text-gray-100' : 'bg-gray-50 text-slate-900'} p-6`}>
       {/* Page Header with clear explanation */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Risk Scoring Studio</h1>
+        <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'} mb-2`}>Risk Scoring Studio</h1>
         <p className="text-cyan-400 text-base font-medium mb-3">
           AI-powered scenario assessment and resilience analysis for G-SIB risk management
         </p>
-        <div className="bg-navy-900 border border-slate-700 rounded-lg p-4 text-sm text-slate-200 leading-relaxed">
-          <span className="font-semibold text-white">How it works:</span>{' '}
+        <div className={`${isDark ? 'bg-navy-900 border-slate-700 text-slate-200' : 'bg-gray-100 border-gray-300 text-slate-700'} border rounded-lg p-4 text-sm leading-relaxed`}>
+          <span className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>How it works:</span>{' '}
           Configure a risk scenario on the left panel by selecting a business line, product, geography,
           and risk type. Adjust the inherent risk and control strength sliders, then click{' '}
           <span className="text-cyan-400 font-semibold">"Run Assessment"</span>{' '}
@@ -351,8 +353,8 @@ export default function Workbench() {
           {/* Scrollable form area */}
           <div className="flex-1 overflow-y-auto space-y-6 pb-4">
           {/* Scenario Form */}
-          <Card className="bg-navy-900 border-slate-700 p-6">
-            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+          <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-6`}>
+            <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'} mb-4 flex items-center gap-2`}>
               <Zap className="w-5 h-5 text-cyan-400" />
               Scenario Configuration
             </h2>
@@ -360,27 +362,27 @@ export default function Workbench() {
             <div className="space-y-4">
               {/* Scenario Name */}
               <div>
-                <label className="block text-sm font-semibold text-slate-100 mb-2">
+                <label className={`block text-sm font-semibold ${isDark ? 'text-slate-100' : 'text-slate-700'} mb-2`}>
                   Scenario Name
                 </label>
                 <input
                   type="text"
                   value={formData.scenarioName}
                   onChange={(e) => handleFormChange('scenarioName', e.target.value)}
-                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500"
+                  className={`w-full px-3 py-2 ${isDark ? 'bg-navy-800 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-gray-300 text-slate-900 placeholder-gray-500'} border rounded focus:outline-none focus:border-cyan-500`}
                   placeholder="Enter scenario name"
                 />
               </div>
 
               {/* Business Line */}
               <div>
-                <label className="block text-sm font-semibold text-slate-100 mb-2">
+                <label className={`block text-sm font-semibold ${isDark ? 'text-slate-100' : 'text-slate-700'} mb-2`}>
                   Business Line
                 </label>
                 <select
                   value={formData.businessLine}
                   onChange={(e) => handleFormChange('businessLine', e.target.value)}
-                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white focus:outline-none focus:border-cyan-500"
+                  className={`w-full px-3 py-2 ${isDark ? 'bg-navy-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-slate-900'} border rounded focus:outline-none focus:border-cyan-500`}
                 >
                   {BUSINESS_LINES.map((line) => (
                     <option key={line} value={line}>
@@ -392,11 +394,11 @@ export default function Workbench() {
 
               {/* Product */}
               <div>
-                <label className="block text-sm font-semibold text-slate-100 mb-2">Product</label>
+                <label className={`block text-sm font-semibold ${isDark ? 'text-slate-100' : 'text-slate-700'} mb-2`}>Product</label>
                 <select
                   value={formData.product}
                   onChange={(e) => handleFormChange('product', e.target.value)}
-                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white focus:outline-none focus:border-cyan-500"
+                  className={`w-full px-3 py-2 ${isDark ? 'bg-navy-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-slate-900'} border rounded focus:outline-none focus:border-cyan-500`}
                 >
                   {availableProducts.map((prod) => (
                     <option key={prod} value={prod}>
@@ -408,11 +410,11 @@ export default function Workbench() {
 
               {/* Geography */}
               <div>
-                <label className="block text-sm font-semibold text-slate-100 mb-2">Geography</label>
+                <label className={`block text-sm font-semibold ${isDark ? 'text-slate-100' : 'text-slate-700'} mb-2`}>Geography</label>
                 <select
                   value={formData.geography}
                   onChange={(e) => handleFormChange('geography', e.target.value)}
-                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white focus:outline-none focus:border-cyan-500"
+                  className={`w-full px-3 py-2 ${isDark ? 'bg-navy-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-slate-900'} border rounded focus:outline-none focus:border-cyan-500`}
                 >
                   {GEOGRAPHIES.map((geo) => (
                     <option key={geo} value={geo}>
@@ -424,11 +426,11 @@ export default function Workbench() {
 
               {/* Risk Type */}
               <div>
-                <label className="block text-sm font-semibold text-slate-100 mb-2">Risk Type</label>
+                <label className={`block text-sm font-semibold ${isDark ? 'text-slate-100' : 'text-slate-700'} mb-2`}>Risk Type</label>
                 <select
                   value={formData.riskType}
                   onChange={(e) => handleFormChange('riskType', e.target.value)}
-                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white focus:outline-none focus:border-cyan-500"
+                  className={`w-full px-3 py-2 ${isDark ? 'bg-navy-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-slate-900'} border rounded focus:outline-none focus:border-cyan-500`}
                 >
                   {RISK_TYPES.map((type) => (
                     <option key={type} value={type}>
@@ -441,7 +443,7 @@ export default function Workbench() {
               {/* Inherent Risk Slider */}
               <div>
                 <div className="flex justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-300">Inherent Risk</label>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>Inherent Risk</label>
                   <span className="text-sm font-bold text-cyan-400">{formData.inherentRisk}</span>
                 </div>
                 <input
@@ -453,7 +455,7 @@ export default function Workbench() {
                   onChange={(e) => handleFormChange('inherentRisk', parseInt(e.target.value))}
                   className="w-full h-2 bg-gradient-to-r from-green-600 via-yellow-600 to-red-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
                 />
-                <div className="flex justify-between text-xs text-slate-300 mt-1">
+                <div className={`flex justify-between text-xs ${isDark ? 'text-slate-300' : 'text-slate-600'} mt-1`}>
                   <span>Low</span>
                   <span>Moderate-Low</span>
                   <span>Moderate</span>
@@ -465,7 +467,7 @@ export default function Workbench() {
               {/* Control Strength Slider */}
               <div>
                 <div className="flex justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-300">Control Strength</label>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>Control Strength</label>
                   <span className="text-sm font-bold text-cyan-400">{formData.controlStrength}</span>
                 </div>
                 <input
@@ -477,7 +479,7 @@ export default function Workbench() {
                   onChange={(e) => handleFormChange('controlStrength', parseInt(e.target.value))}
                   className="w-full h-2 bg-gradient-to-r from-red-600 via-yellow-600 to-green-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
                 />
-                <div className="flex justify-between text-xs text-slate-300 mt-1">
+                <div className={`flex justify-between text-xs ${isDark ? 'text-slate-300' : 'text-slate-600'} mt-1`}>
                   <span>Weak</span>
                   <span>Below Avg</span>
                   <span>Adequate</span>
@@ -488,28 +490,28 @@ export default function Workbench() {
 
               {/* Loss History */}
               <div>
-                <label className="block text-sm font-semibold text-slate-100 mb-2">
+                <label className={`block text-sm font-semibold ${isDark ? 'text-slate-100' : 'text-slate-700'} mb-2`}>
                   Loss History (last 12 months, USD)
                 </label>
                 <input
                   type="number"
                   value={formData.lossHistory}
                   onChange={(e) => handleFormChange('lossHistory', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500"
+                  className={`w-full px-3 py-2 ${isDark ? 'bg-navy-800 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-gray-300 text-slate-900 placeholder-gray-500'} border rounded focus:outline-none focus:border-cyan-500`}
                   placeholder="0"
                 />
               </div>
 
               {/* Additional Factors */}
               <div>
-                <label className="block text-sm font-semibold text-slate-100 mb-3">
+                <label className={`block text-sm font-semibold ${isDark ? 'text-slate-100' : 'text-slate-700'} mb-3`}>
                   Additional Factors
                 </label>
                 <div className="space-y-2">
                   {ADDITIONAL_FACTORS_OPTIONS.map((factor) => (
                     <label
                       key={factor.value}
-                      className="flex items-center gap-2 cursor-pointer text-slate-200 hover:text-white"
+                      className={`flex items-center gap-2 cursor-pointer ${isDark ? 'text-slate-200 hover:text-white' : 'text-slate-700 hover:text-slate-900'}`}
                     >
                       <input
                         type="checkbox"
@@ -527,7 +529,7 @@ export default function Workbench() {
                             );
                           }
                         }}
-                        className="w-4 h-4 bg-navy-800 border-slate-500 rounded cursor-pointer accent-cyan-500"
+                        className={`w-4 h-4 ${isDark ? 'bg-navy-800 border-slate-500' : 'bg-white border-gray-300'} border rounded cursor-pointer accent-cyan-500`}
                       />
                       <span className="text-sm">
                         {factor.label}{' '}
@@ -543,18 +545,18 @@ export default function Workbench() {
 
           {/* Pre-built Scenarios */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-3">Pre-built Scenarios</h3>
+            <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'} mb-3`}>Pre-built Scenarios</h3>
             <div className="grid grid-cols-1 gap-3">
               {PRE_BUILT_SCENARIOS.map((scenario) => (
                 <button
                   key={scenario.name}
                   onClick={() => loadPreBuiltScenario(scenario)}
-                  className="p-3 bg-navy-900 border border-slate-700 rounded-lg hover:border-cyan-500 hover:bg-navy-800 transition text-left group"
+                  className={`p-3 ${isDark ? 'bg-navy-900 border-slate-700 hover:bg-navy-800' : 'bg-white border-gray-200 hover:bg-gray-50'} border rounded-lg hover:border-cyan-500 transition text-left group`}
                 >
-                  <h4 className="font-semibold text-white group-hover:text-cyan-400 transition">
+                  <h4 className={`font-semibold ${isDark ? 'text-white group-hover:text-cyan-400' : 'text-slate-900 group-hover:text-cyan-600'} transition`}>
                     {scenario.name}
                   </h4>
-                  <p className="text-sm text-slate-300 mt-1">
+                  <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'} mt-1`}>
                     {scenario.businessLine} • {scenario.riskType}
                   </p>
                 </button>
@@ -564,7 +566,7 @@ export default function Workbench() {
           </div>
 
           {/* Sticky Run Assessment Button — always visible */}
-          <div className="pt-3 border-t border-slate-700 mt-2">
+          <div className={`pt-3 border-t ${isDark ? 'border-slate-700' : 'border-gray-300'} mt-2`}>
             <RequirePermission permission="workbench:execute">
               <button
                 onClick={calculateScores}
@@ -640,18 +642,18 @@ export default function Workbench() {
               </Card>
 
               {/* Score Decomposition */}
-              <Card className="bg-navy-900 border-slate-700 p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Score Decomposition</h3>
+              <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-6`}>
+                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'} mb-4`}>Score Decomposition</h3>
                 <div className="space-y-4">
                   {scoringResult.factorContributions.map((factor) => (
                     <div key={factor.name}>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-100 font-medium">{factor.name}</span>
-                        <span className="text-slate-300">
+                        <span className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>{factor.name}</span>
+                        <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>
                           Weight: {(factor.weight * 100).toFixed(0)}% • Value: {factor.value.toFixed(2)}
                         </span>
                       </div>
-                      <div className="w-full bg-slate-700 rounded-full h-2">
+                      <div className={`w-full ${isDark ? 'bg-slate-700' : 'bg-gray-200'} rounded-full h-2`}>
                         <div
                           className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full"
                           style={{
@@ -659,7 +661,7 @@ export default function Workbench() {
                           }}
                         />
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">
+                      <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'} mt-1`}>
                         Contribution: {(factor.contribution * 100).toFixed(1)}%
                       </div>
                     </div>
@@ -668,10 +670,10 @@ export default function Workbench() {
               </Card>
 
               {/* Scoring Logic */}
-              <Card className="bg-navy-900 border-slate-700 p-6">
+              <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-6`}>
                 <button
                   onClick={() => setShowScoringLogic(!showScoringLogic)}
-                  className="w-full flex items-center justify-between font-semibold text-white hover:text-blue-400 transition"
+                  className={`w-full flex items-center justify-between font-semibold ${isDark ? 'text-white hover:text-blue-400' : 'text-slate-900 hover:text-blue-600'} transition`}
                 >
                   <span className="flex items-center gap-2">
                     <AlertCircle className="w-5 h-5" />
@@ -683,13 +685,13 @@ export default function Workbench() {
                 </button>
 
                 {showScoringLogic && (
-                  <div className="mt-4 p-3 bg-navy-800/80 rounded text-sm text-slate-200 font-mono text-xs">
-                    <p className="mb-3 text-slate-300">
+                  <div className={`mt-4 p-3 ${isDark ? 'bg-navy-800/80 text-slate-200' : 'bg-gray-100 text-slate-700'} rounded text-sm font-mono text-xs`}>
+                    <p className={`mb-3 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                       Composite = (InherentRisk × 0.30) + ((6 - ControlStrength) × 0.25) +
                       (LossHistoryFactor × 0.15) + (BusinessComplexity × 0.10) +
                       (RegulatoryFactor × 0.10) + (AdditionalFactors × 0.10)
                     </p>
-                    <p className="text-slate-400">
+                    <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
                       Where each component is normalized to [0, 1] and the final result is scaled to [1, 5]
                     </p>
                   </div>
@@ -722,13 +724,13 @@ export default function Workbench() {
               </button>
             </>
           ) : (
-            <Card className="bg-navy-900 border-slate-700 p-12 flex items-center justify-center h-96">
+            <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-12 flex items-center justify-center h-96`}>
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-cyan-600/10 border-2 border-cyan-600/30 flex items-center justify-center">
                   <Zap className="w-10 h-10 text-cyan-400" />
                 </div>
-                <p className="text-white text-xl font-semibold mb-2">Assessment Results</p>
-                <p className="text-slate-300 text-sm mb-6 max-w-md leading-relaxed">
+                <p className={`${isDark ? 'text-white' : 'text-slate-900'} text-xl font-semibold mb-2`}>Assessment Results</p>
+                <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} text-sm mb-6 max-w-md leading-relaxed`}>
                   Configure your risk scenario in the left panel — select a business line,
                   product, geography, and risk type — then click the button below to generate
                   a composite risk score with AI-powered analysis.
@@ -752,7 +754,7 @@ export default function Workbench() {
       {showJsonModal && scoringResult && (
         <Modal onClose={() => setShowJsonModal(false)} title="Export Assessment Results">
           <div className="space-y-4">
-            <div className="bg-navy-950 p-4 rounded text-xs text-slate-200 font-mono max-h-96 overflow-y-auto">
+            <div className={`${isDark ? 'bg-navy-950 text-slate-200' : 'bg-gray-100 text-slate-700'} p-4 rounded text-xs font-mono max-h-96 overflow-y-auto`}>
               <pre>
                 {JSON.stringify(
                   {

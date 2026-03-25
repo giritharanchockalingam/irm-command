@@ -430,11 +430,17 @@ let supabaseInstance: SupabaseDataAccess | null = null;
 
 /**
  * Get the DataAccessLayer singleton instance.
- * Uses SupabaseDataAccess when Supabase is configured, otherwise InMemoryDataAccess.
+ * In demo/prototype auth mode, always uses InMemoryDataAccess (seed data)
+ * because demo tokens cannot authenticate with Supabase RLS.
+ * Only uses SupabaseDataAccess in production/staging with real auth.
  */
 export function getDataAccess(): DataAccessLayer {
   if (!instance) {
-    if (isSupabaseConfigured()) {
+    const config = getConfig();
+    const isDemoMode = config.auth.mode === 'demo';
+    const isProductionAuth = config.app.environment === 'production' || config.app.environment === 'staging';
+
+    if (isSupabaseConfigured() && !isDemoMode && isProductionAuth) {
       supabaseInstance = new SupabaseDataAccess();
       instance = supabaseInstance;
     } else {

@@ -19,6 +19,7 @@ import { getDataAccess } from '../data/DataAccessLayer';
 import { Risk, KRI, Issue } from '../domain/types';
 import { useAppStore } from '../store/appStore';
 import { useSecurity } from '../security/SecurityContext';
+import { useThemeStore } from '../store/themeStore';
 
 const Dashboard: React.FC = () => {
   const [digestTab, setDigestTab] = useState<'risk' | 'examiner'>('risk');
@@ -30,6 +31,7 @@ const Dashboard: React.FC = () => {
   } | null>(null);
   const { selectEntity } = useAppStore();
   const { can: canPerform } = useSecurity();
+  const isDark = useThemeStore((state) => state.isDark);
 
   const dal = getDataAccess();
   const risks = dal.getRisks();
@@ -310,7 +312,7 @@ const Dashboard: React.FC = () => {
   // ============ MAIN RENDER ============
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
+    <div className={`min-h-screen ${isDark ? 'bg-slate-900 text-slate-100' : 'bg-gray-50 text-slate-900'} p-6`}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-baseline mb-8">
@@ -318,7 +320,7 @@ const Dashboard: React.FC = () => {
             <h1 className="text-4xl font-bold text-cyan-400 mb-2">
               Executive Command Center
             </h1>
-            <p className="text-slate-400">
+            <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               Real-time IRM monitoring & strategic intelligence
             </p>
           </div>
@@ -330,9 +332,9 @@ const Dashboard: React.FC = () => {
         {/* ===== TOP STATS ROW ===== */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Enterprise Risk Score */}
-          <Card className="bg-slate-800 border-slate-700 hover:border-cyan-500/50 transition-colors cursor-pointer">
+          <Card className="hover:border-cyan-500/50 transition-colors cursor-pointer">
             <div className="p-4">
-              <div className="text-slate-400 text-sm mb-3">Enterprise Risk Score</div>
+              <div className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm mb-3`}>Enterprise Risk Score</div>
               <div className="flex items-end justify-between mb-3">
                 <div>
                   <div className="text-4xl font-bold text-amber-400">
@@ -352,7 +354,7 @@ const Dashboard: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
+              <div className={`h-1 ${isDark ? 'bg-slate-700' : 'bg-gray-200'} rounded-full overflow-hidden`}>
                 <div
                   className="h-full bg-amber-400"
                   style={{
@@ -367,9 +369,9 @@ const Dashboard: React.FC = () => {
           </Card>
 
           {/* Open Issues */}
-          <Card className="bg-slate-800 border-slate-700 hover:border-cyan-500/50 transition-colors cursor-pointer">
+          <Card className="hover:border-cyan-500/50 transition-colors cursor-pointer">
             <div className="p-4">
-              <div className="text-slate-400 text-sm mb-3">Open Issues</div>
+              <div className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm mb-3`}>Open Issues</div>
               <div className="text-4xl font-bold text-red-400 mb-3">
                 {issuesSummary.total}
               </div>
@@ -406,9 +408,9 @@ const Dashboard: React.FC = () => {
           </Card>
 
           {/* KRI Breaches */}
-          <Card className="bg-slate-800 border-slate-700 hover:border-cyan-500/50 transition-colors cursor-pointer">
+          <Card className="hover:border-cyan-500/50 transition-colors cursor-pointer">
             <div className="p-4">
-              <div className="text-slate-400 text-sm mb-3">KRI Breaches</div>
+              <div className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm mb-3`}>KRI Breaches</div>
               <div className="text-4xl font-bold text-orange-400 mb-3">
                 {kriBreaches.critical + kriBreaches.breach}
               </div>
@@ -420,9 +422,9 @@ const Dashboard: React.FC = () => {
           </Card>
 
           {/* Capital at Risk */}
-          <Card className="bg-slate-800 border-slate-700 hover:border-cyan-500/50 transition-colors cursor-pointer">
+          <Card className="hover:border-cyan-500/50 transition-colors cursor-pointer">
             <div className="p-4">
-              <div className="text-slate-400 text-sm mb-3">Capital at Risk (YTD)</div>
+              <div className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm mb-3`}>Capital at Risk (YTD)</div>
               <div className="text-3xl font-bold text-red-400 mb-3">
                 ${(capitalAtRisk / 1e6).toFixed(1)}M
               </div>
@@ -436,9 +438,9 @@ const Dashboard: React.FC = () => {
           </Card>
 
           {/* Vendor Risk Index */}
-          <Card className="bg-slate-800 border-slate-700 hover:border-cyan-500/50 transition-colors cursor-pointer">
+          <Card className="hover:border-cyan-500/50 transition-colors cursor-pointer">
             <div className="p-4">
-              <div className="text-slate-400 text-sm mb-3">Vendor Risk Index</div>
+              <div className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm mb-3`}>Vendor Risk Index</div>
               <div className="text-4xl font-bold text-amber-400 mb-3">
                 {vendorRiskMetrics.index}
               </div>
@@ -453,7 +455,7 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* LEFT: Risk Heat Map (2/3) */}
           <div className="lg:col-span-2">
-            <Card className="bg-slate-800 border-slate-700 h-full">
+            <Card className="h-full">
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-6">
                   <BarChart3 size={20} className="text-cyan-400" />
@@ -464,14 +466,14 @@ const Dashboard: React.FC = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr>
-                        <th className="text-left text-slate-400 font-normal pb-3 pr-2">
+                        <th className={`text-left ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal pb-3 pr-2`}>
                           Impact \
                         </th>
                         {['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain'].map(
                           (label, idx) => (
                             <th
                               key={`likelihood-${idx}`}
-                              className="text-center text-slate-400 font-normal pb-3 w-20"
+                              className={`text-center ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal pb-3 w-20`}
                             >
                               <div className="text-xs">{label}</div>
                             </th>
@@ -485,7 +487,7 @@ const Dashboard: React.FC = () => {
                           const impact = 5 - impactIdx;
                           return (
                             <tr key={`impact-${impactIdx}`}>
-                              <td className="text-xs text-slate-400 pr-2 py-2 font-medium">
+                              <td className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'} pr-2 py-2 font-medium`}>
                                 {impactLabel}
                               </td>
                               {[1, 2, 3, 4, 5].map((likelihood) => {
@@ -518,7 +520,7 @@ const Dashboard: React.FC = () => {
                   </table>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-700">
+                <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
                   <div className="text-xs text-slate-500">
                     Total risks in view: {risks.length}
                   </div>
@@ -529,8 +531,8 @@ const Dashboard: React.FC = () => {
 
           {/* RIGHT: AI Daily Digest (1/3) */}
           <div>
-            <Card className="bg-slate-800 border-slate-700 h-full flex flex-col">
-              <div className="p-6 border-b border-slate-700">
+            <Card className="h-full flex flex-col">
+              <div className={`p-6 border-b ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-2 mb-4">
                   <Brain size={20} className="text-purple-400" />
                   <h2 className="text-lg font-semibold">AI Daily Digest</h2>
@@ -542,7 +544,7 @@ const Dashboard: React.FC = () => {
                     className={`text-xs px-3 py-1.5 rounded border transition-colors ${
                       digestTab === 'risk'
                         ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
-                        : 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500'
+                        : isDark ? 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500' : 'bg-gray-100 border-gray-300 text-slate-600 hover:border-gray-400'
                     }`}
                   >
                     Risk Posture
@@ -552,7 +554,7 @@ const Dashboard: React.FC = () => {
                     className={`text-xs px-3 py-1.5 rounded border transition-colors ${
                       digestTab === 'examiner'
                         ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
-                        : 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500'
+                        : isDark ? 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500' : 'bg-gray-100 border-gray-300 text-slate-600 hover:border-gray-400'
                     }`}
                   >
                     Examiner View
@@ -577,7 +579,7 @@ const Dashboard: React.FC = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="text-slate-500 text-sm">
+                  <div className={`${isDark ? 'text-slate-500' : 'text-slate-600'} text-sm`}>
                     Click Generate to create a personalized {digestTab} digest
                   </div>
                 )}
@@ -589,14 +591,14 @@ const Dashboard: React.FC = () => {
         {/* ===== PROGRAM OVERVIEW ROW ===== */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* IRM Maturity */}
-          <Card className="bg-slate-800 border-slate-700">
+          <Card>
             <div className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <Target size={20} className="text-cyan-400" />
                 <h3 className="text-lg font-semibold">IRM Maturity Profile</h3>
               </div>
               <div className="flex justify-center">{renderPentagon()}</div>
-              <div className="mt-4 space-y-1 text-xs text-slate-400">
+              <div className={`mt-4 space-y-1 text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 {irmMaturityDimensions.map((dim) => (
                   <div key={dim.name} className="flex justify-between">
                     <span>{dim.name}</span>
@@ -608,7 +610,7 @@ const Dashboard: React.FC = () => {
           </Card>
 
           {/* Open Actions */}
-          <Card className="bg-slate-800 border-slate-700">
+          <Card>
             <div className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <CheckCircle2 size={20} className="text-cyan-400" />
@@ -622,7 +624,7 @@ const Dashboard: React.FC = () => {
                       cy="60"
                       r="50"
                       fill="none"
-                      stroke="#334155"
+                      stroke={isDark ? '#334155' : '#e2e8f0'}
                       strokeWidth="8"
                     />
                     <circle
@@ -647,19 +649,19 @@ const Dashboard: React.FC = () => {
                         )}
                         %
                       </div>
-                      <div className="text-xs text-slate-500">Complete</div>
+                      <div className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>Complete</div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="text-center text-sm text-slate-400">
+              <div className={`text-center text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 {actionItemsMetrics.completed} of {actionItemsMetrics.total} items
               </div>
             </div>
           </Card>
 
           {/* Test Coverage */}
-          <Card className="bg-slate-800 border-slate-700">
+          <Card>
             <div className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <Zap size={20} className="text-cyan-400" />
@@ -667,12 +669,12 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="mb-6">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-400">Coverage</span>
+                  <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Coverage</span>
                   <span className="text-cyan-400 font-bold">
                     {testCoverageMetrics.percentage}%
                   </span>
                 </div>
-                <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
+                <div className={`h-3 ${isDark ? 'bg-slate-700' : 'bg-gray-200'} rounded-full overflow-hidden`}>
                   <div
                     className="h-full bg-gradient-to-r from-cyan-500 to-blue-500"
                     style={{ width: `${testCoverageMetrics.percentage}%` }}
@@ -690,7 +692,7 @@ const Dashboard: React.FC = () => {
         {/* ===== BOTTOM ROW: Issues & KRIs ===== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Active Issues Table */}
-          <Card className="bg-slate-800 border-slate-700">
+          <Card>
             <div className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <AlertTriangle size={20} className="text-red-400" />
@@ -700,23 +702,23 @@ const Dashboard: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left text-slate-400 font-normal py-2">ID</th>
-                      <th className="text-left text-slate-400 font-normal py-2">
+                    <tr className={`border-b ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                      <th className={`text-left ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal py-2`}>ID</th>
+                      <th className={`text-left ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal py-2`}>
                         Title
                       </th>
-                      <th className="text-left text-slate-400 font-normal py-2">
+                      <th className={`text-left ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal py-2`}>
                         Severity
                       </th>
-                      <th className="text-left text-slate-400 font-normal py-2">Owner</th>
-                      <th className="text-left text-slate-400 font-normal py-2">Due</th>
+                      <th className={`text-left ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal py-2`}>Owner</th>
+                      <th className={`text-left ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal py-2`}>Due</th>
                     </tr>
                   </thead>
                   <tbody>
                     {issuesTop.map((issue) => (
                       <tr
                         key={issue.id}
-                        className={`border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer transition-colors ${
+                        className={`border-b ${isDark ? 'border-slate-700/50 hover:bg-slate-700/30' : 'border-gray-200/50 hover:bg-gray-100'} cursor-pointer transition-colors ${
                           isOverdue(issue.dueDate)
                             ? 'bg-red-500/10'
                             : ''
@@ -728,7 +730,7 @@ const Dashboard: React.FC = () => {
                         <td className="py-2 text-cyan-400 font-mono text-xs">
                           {issue.id}
                         </td>
-                        <td className="py-2 text-slate-200 truncate max-w-xs">
+                        <td className={`py-2 ${isDark ? 'text-slate-200' : 'text-slate-900'} truncate max-w-xs`}>
                           {issue.title}
                         </td>
                         <td className="py-2">
@@ -740,10 +742,10 @@ const Dashboard: React.FC = () => {
                             {issue.severity}
                           </Badge>
                         </td>
-                        <td className="py-2 text-slate-400 text-xs">
+                        <td className={`py-2 ${isDark ? 'text-slate-400' : 'text-slate-600'} text-xs`}>
                           {issue.owner}
                         </td>
-                        <td className="py-2 text-slate-400 text-xs">
+                        <td className={`py-2 ${isDark ? 'text-slate-400' : 'text-slate-600'} text-xs`}>
                           {new Date(issue.dueDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -755,14 +757,14 @@ const Dashboard: React.FC = () => {
                 </table>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-700 text-xs text-slate-500">
+              <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'} text-xs text-slate-500`}>
                 Showing {issuesTop.length} of {issues.length} issues
               </div>
             </div>
           </Card>
 
           {/* KRI Monitor */}
-          <Card className="bg-slate-800 border-slate-700">
+          <Card>
             <div className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <Users size={20} className="text-purple-400" />
@@ -776,14 +778,14 @@ const Dashboard: React.FC = () => {
                   return (
                     <div
                       key={kri.id}
-                      className="pb-4 border-b border-slate-700/50 last:border-0 cursor-pointer hover:bg-slate-700/20 p-2 rounded transition-colors"
+                      className={`pb-4 border-b ${isDark ? 'border-slate-700/50 hover:bg-slate-700/20' : 'border-gray-200/50 hover:bg-gray-100'} last:border-0 cursor-pointer p-2 rounded transition-colors`}
                       onClick={() =>
                         selectEntity('kri', kri.id)
                       }
                     >
                       <div className="flex items-baseline justify-between mb-2">
                         <div>
-                          <div className="text-sm font-medium text-slate-200">
+                          <div className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                             {kri.name}
                           </div>
                           <div className="text-xs text-slate-500">
@@ -811,7 +813,7 @@ const Dashboard: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div className={`h-2 ${isDark ? 'bg-slate-700' : 'bg-gray-200'} rounded-full overflow-hidden`}>
                         <div
                           className={`h-full transition-all ${
                             percentOfThreshold > 150
@@ -838,7 +840,7 @@ const Dashboard: React.FC = () => {
                 })}
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-700 text-xs text-slate-500">
+              <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'} text-xs text-slate-500`}>
                 Showing {krisTop.length} of {kris.length} KRIs
               </div>
             </div>

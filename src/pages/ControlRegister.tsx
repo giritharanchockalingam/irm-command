@@ -454,7 +454,7 @@ export default function ControlRegister() {
                             )}
 
                             {/* Edit Button (with Permission Check) */}
-                            <div className="pt-2 border-t border-gray-300 dark:border-slate-600">
+                            <div className={`pt-2 border-t ${isDark ? 'border-slate-600' : 'border-gray-300'}`}>
                               <RequirePermission permission="admin:settings">
                                 <button
                                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${

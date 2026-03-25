@@ -1,5 +1,6 @@
 import { getConfig } from '../config';
 import { scrubObject, tagEnvironment } from './privacy'; // CISO-007
+import { getAuditLogger } from '../security/AuditLogger';
 
 export interface TelemetryEvent {
   name: string;
@@ -314,3 +315,148 @@ export const PerformanceTracker = {
     }
   },
 };
+
+// ============================================================================
+// SECURITY ALERT MONITOR
+// ============================================================================
+
+export interface SecurityAlertThreshold {
+  eventType: string;
+  userId: string;
+  count: number;
+  windowMs: number;
+}
+
+export class SecurityAlertMonitor {
+  private eventLog: Map<string, Array<{ timestamp: number; count: number }>> = new Map();
+  private readonly thresholds = {
+    failedLoginAttempts: { count: 5, windowMs: 5 * 60 * 1000 }, // 5 attempts in 5 minutes
+    rateLimitViolations: { count: 10, windowMs: 60 * 1000 }, // 10 violations in 1 minute
+    cspViolations: { count: 20, windowMs: 5 * 60 * 1000 }, // 20 violations in 5 minutes
+    unauthorizedAccess: { count: 3, windowMs: 5 * 60 * 1000 }, // 3 attempts in 5 minutes
+  };
+
+  private getCurrentEventKey(eventType: string, userId: string): string {
+    return `${eventType}:${userId}`;
+  }
+
+  private cleanupExpiredEvents(key: string, windowMs: number): void {
+    const now = Date.now();
+    const events = this.eventLog.get(key);
+    if (!events) return;
+
+    const filtered = events.filter(e => now - e.timestamp < windowMs);
+    if (filtered.length === 0) {
+      this.eventLog.delete(key);
+    } else {
+      this.eventLog.set(key, filtered);
+    }
+  }
+
+  private recordEvent(eventType: string, userId: string): number {
+    const key = this.getCurrentEventKey(eventType, userId);
+    const now = Date.now();
+
+    let events = this.eventLog.get(key) || [];
+    events.push({ timestamp: now, count: 1 });
+    this.eventLog.set(key, events);
+
+    return events.length;
+  }
+
+  private getEventCount(eventType: string, userId: string, windowMs: number): number {
+    const key = this.getCurrentEventKey(eventType, userId);
+    const now = Date.now();
+
+    const events = this.eventLog.get(key) || [];
+    const recentEvents = events.filter(e => now - e.timestamp < windowMs);
+
+    return recentEvents.reduce((sum, e) => sum + e.count, 0);
+  }
+
+  public evaluateAlert(eventType: string, userId: string): void {
+    this.recordEvent(eventType, userId);
+
+    let threshold;
+    switch (eventType) {
+      case 'failedLoginAttempts':
+        threshold = this.thresholds.failedLoginAttempts;
+        break;
+      case 'rateLimitViolations':
+        threshold = this.thresholds.rateLimitViolations;
+        break;
+      case 'cspViolations':
+        threshold = this.thresholds.cspViolations;
+        break;
+      case 'unauthorizedAccess':
+        threshold = this.thresholds.unauthorizedAccess;
+        break;
+      default:
+        return;
+    }
+
+    // Clean up expired events
+    this.cleanupExpiredEvents(this.getCurrentEventKey(eventType, userId), threshold.windowMs);
+
+    // Check if threshold is exceeded
+    const count = this.getEventCount(eventType, userId, threshold.windowMs);
+    if (count >= threshold.count) {
+      this.raiseAlert(eventType, userId, count, threshold.count);
+    }
+  }
+
+  private raiseAlert(eventType: string, userId: string, count: number, threshold: number): void {
+    const auditLogger = getAuditLogger();
+
+    // Map event types to risk levels
+    const riskLevelMap: Record<string, 'low' | 'medium' | 'high' | 'critical'> = {
+      failedLoginAttempts: 'high',
+      rateLimitViolations: 'medium',
+      cspViolations: 'medium',
+      unauthorizedAccess: 'critical',
+    };
+
+    const riskLevel = riskLevelMap[eventType] || 'medium';
+
+    // Log alert to audit logger
+    auditLogger.log({
+      userId,
+      userEmail: `system@irmcommand.io`,
+      tenantId: 'system',
+      action: 'PERMISSION_DENIED',
+      entityType: 'MonitoringAlert',
+      entityId: `alert-${eventType}-${Date.now()}`,
+      module: 'security',
+      metadata: {
+        alertType: eventType,
+        detectedCount: count,
+        threshold,
+        windowMs: this.thresholds[eventType as keyof typeof this.thresholds]?.windowMs || 0,
+      },
+      success: false,
+      riskLevel,
+      source: 'system',
+    });
+
+    // Also emit telemetry event for monitoring
+    getTelemetry().trackEvent(`security.alert.${eventType}`, {
+      userId,
+      count,
+      threshold,
+      riskLevel,
+    });
+  }
+
+  public reset(): void {
+    this.eventLog.clear();
+  }
+}
+
+let securityAlertMonitorInstance: SecurityAlertMonitor | null = null;
+
+export function getSecurityAlertMonitor(): SecurityAlertMonitor {
+  if (!securityAlertMonitorInstance) {
+    securityAlertMonitorInstance = new SecurityAlertMonitor();
+  }
+  return securityAlertMonitorInstance;
+}

@@ -16,6 +16,7 @@ import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
 import { useAppStore } from '../store/appStore';
+import { useThemeStore } from '../store/themeStore';
 import { useSecurity, RequirePermission } from '../security/SecurityContext';
 
 interface Message {
@@ -140,6 +141,7 @@ const getProactiveAlerts = (module: string): ProactiveAlert[] => {
 
 const Copilot: React.FC = () => {
   const { can: canPerform } = useSecurity();
+  const { isDark } = useThemeStore();
   const currentModule = useAppStore((s) => s.currentModule);
   const selectedEntityId = useAppStore((s) => s.selectedEntityId);
   const selectedEntityType = useAppStore((s) => s.selectedEntityType);
@@ -258,13 +260,23 @@ const Copilot: React.FC = () => {
 
   const contextualSuggestions = getContextualSuggestions(currentModule);
 
+  const bgClass = isDark ? 'bg-gray-900' : 'bg-gray-50';
+  const borderClass = isDark ? 'border-gray-700' : 'border-gray-200';
+  const cardBgClass = isDark ? 'bg-gray-800' : 'bg-white';
+  const textClass = isDark ? 'text-white' : 'text-gray-900';
+  const mutedTextClass = isDark ? 'text-gray-400' : 'text-gray-600';
+  const hoverClass = isDark ? 'hover:bg-blue-900/20' : 'hover:bg-blue-50';
+  const hoverBorderClass = isDark ? 'hover:border-blue-700' : 'hover:border-blue-300';
+  const inputBgClass = isDark ? 'bg-gray-700' : 'bg-white';
+  const inputBorderClass = isDark ? 'border-gray-600' : 'border-gray-300';
+
   return (
-    <div className="flex h-full bg-gray-50 dark:bg-gray-900">
+    <div className={`flex h-full ${bgClass}`}>
       {/* Left Section: Quick Actions & Context (30%) */}
-      <div className="w-3/10 border-r border-gray-200 dark:border-gray-700 p-6 overflow-y-auto">
+      <div className={`w-3/10 border-r ${borderClass} p-6 overflow-y-auto`}>
         {/* Quick Actions Grid */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+          <h3 className={`text-sm font-semibold ${textClass} mb-4`}>
             Quick Actions
           </h3>
           <div className="grid grid-cols-1 gap-3">
@@ -274,10 +286,10 @@ const Copilot: React.FC = () => {
                 <button
                   key={action.id}
                   onClick={() => handleQuickAction(action.id, action.label)}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700 transition-colors text-left"
+                  className={`flex items-center gap-3 p-3 rounded-lg border ${borderClass} ${hoverClass} ${hoverBorderClass} transition-colors text-left`}
                 >
-                  <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Icon className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'} flex-shrink-0`} />
+                  <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     {action.label}
                   </span>
                 </button>
@@ -287,32 +299,32 @@ const Copilot: React.FC = () => {
         </div>
 
         {/* Context Panel */}
-        <div className="mb-8 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+        <div className={`mb-8 p-4 ${cardBgClass} rounded-lg border ${borderClass}`}>
+          <h3 className={`text-sm font-semibold ${textClass} mb-3`}>
             Current Context
           </h3>
           <div className="space-y-2">
             <div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Module</p>
+              <p className={`text-xs ${mutedTextClass} mb-1`}>Module</p>
               <Badge variant="secondary">
                 {currentModule.charAt(0).toUpperCase() + currentModule.slice(1)}
               </Badge>
             </div>
             {selectedEntityId && (
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Selected Entity</p>
+                <p className={`text-xs ${mutedTextClass} mb-1`}>Selected Entity</p>
                 <Badge variant="primary">{selectedEntityId}</Badge>
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
+          <p className={`text-xs ${mutedTextClass} mt-3`}>
             The copilot is aware of your current context and will tailor responses accordingly.
           </p>
         </div>
 
         {/* Contextual Suggestions */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+          <h3 className={`text-sm font-semibold ${textClass} mb-3`}>
             Suggested Topics
           </h3>
           <div className="space-y-2">
@@ -320,7 +332,7 @@ const Copilot: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => setInputValue(suggestion)}
-                className="w-full text-left px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+                className={`w-full text-left px-3 py-2 text-sm ${cardBgClass} border ${borderClass} rounded-lg ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
               >
                 {suggestion}
               </button>
@@ -330,14 +342,14 @@ const Copilot: React.FC = () => {
       </div>
 
       {/* Right Section: Chat Interface (70%) */}
-      <div className="flex-1 flex flex-col bg-white dark:bg-gray-800">
+      <div className={`flex-1 flex flex-col ${cardBgClass}`}>
         {/* Chat Messages Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && (
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-md">
-                <Bot className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                <Bot className={`w-12 h-12 ${isDark ? 'text-gray-600' : 'text-gray-400'} mx-auto mb-4`} />
+                <p className={`${mutedTextClass} text-sm leading-relaxed`}>
                   Welcome to IRM Command Copilot. I'm your AI-powered GRC assistant, calibrated
                   to supervisory expectations across enterprise risk, compliance, and third-party
                   risk management. How can I assist your risk oversight today?
@@ -357,8 +369,8 @@ const Copilot: React.FC = () => {
                 }`}
               >
                 {message.role === 'assistant' && (
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className={`w-8 h-8 rounded-full ${isDark ? 'bg-blue-900' : 'bg-blue-100'} flex items-center justify-center flex-shrink-0`}>
+                    <Bot className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                   </div>
                 )}
 
@@ -366,7 +378,7 @@ const Copilot: React.FC = () => {
                   className={`rounded-lg px-4 py-3 ${
                     message.role === 'user'
                       ? 'bg-blue-600 text-white rounded-br-none'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-none border border-gray-200 dark:border-gray-600'
+                      : `${isDark ? 'bg-gray-700 text-gray-100 border border-gray-600' : 'bg-gray-100 text-gray-900 border border-gray-200'} rounded-bl-none`
                   }`}
                 >
                   {message.isStreaming ? (
@@ -388,14 +400,14 @@ const Copilot: React.FC = () => {
           {isLoading && (
             <div className="flex justify-start">
               <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className={`w-8 h-8 rounded-full ${isDark ? 'bg-blue-900' : 'bg-blue-100'} flex items-center justify-center flex-shrink-0`}>
+                  <Bot className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
-                <div className="bg-gray-100 dark:bg-gray-700 rounded-lg rounded-bl-none px-4 py-3">
+                <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg rounded-bl-none px-4 py-3`}>
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce delay-100" />
-                    <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce delay-200" />
+                    <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce`} />
+                    <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce delay-100`} />
+                    <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce delay-200`} />
                   </div>
                 </div>
               </div>
@@ -407,28 +419,28 @@ const Copilot: React.FC = () => {
 
         {/* Proactive Alerts */}
         {proactiveAlerts.length > 0 && (
-          <div className="px-6 pt-2 pb-4 space-y-2 border-t border-gray-200 dark:border-gray-700">
+          <div className={`px-6 pt-2 pb-4 space-y-2 border-t ${borderClass}`}>
             {proactiveAlerts.map((alert) => (
               <div
                 key={alert.id}
                 className={`flex items-start gap-3 p-3 rounded-lg ${
                   alert.type === 'warning'
-                    ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
-                    : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+                    ? isDark ? 'bg-amber-900/20 border border-amber-800' : 'bg-amber-50 border border-amber-200'
+                    : isDark ? 'bg-blue-900/20 border border-blue-800' : 'bg-blue-50 border border-blue-200'
                 }`}
               >
                 <AlertCircle
                   className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
                     alert.type === 'warning'
-                      ? 'text-amber-600 dark:text-amber-400'
-                      : 'text-blue-600 dark:text-blue-400'
+                      ? isDark ? 'text-amber-400' : 'text-amber-600'
+                      : isDark ? 'text-blue-400' : 'text-blue-600'
                   }`}
                 />
                 <p
                   className={`text-sm flex-1 ${
                     alert.type === 'warning'
-                      ? 'text-amber-800 dark:text-amber-200'
-                      : 'text-blue-800 dark:text-blue-200'
+                      ? isDark ? 'text-amber-200' : 'text-amber-800'
+                      : isDark ? 'text-blue-200' : 'text-blue-800'
                   }`}
                 >
                   {alert.message}
@@ -446,7 +458,7 @@ const Copilot: React.FC = () => {
         )}
 
         {/* Input Area */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-800">
+        <div className={`border-t ${borderClass} p-6 ${cardBgClass}`}>
           <RequirePermission permission="copilot:interact">
             <div className="flex gap-3">
               <input
@@ -455,19 +467,19 @@ const Copilot: React.FC = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about risks, controls, vendors, compliance..."
-                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                className={`flex-1 px-4 py-2 rounded-lg border ${inputBorderClass} ${inputBgClass} ${textClass} placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                 disabled={isLoading}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={isLoading || !inputValue.trim()}
-                className="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={`p-2 rounded-lg bg-blue-600 ${isDark ? 'hover:bg-blue-700' : 'hover:bg-blue-700'} text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                 aria-label="Send message"
               >
                 <Send className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            <p className={`text-xs ${mutedTextClass} mt-2`}>
               Tip: Use Ctrl+Enter to send
             </p>
           </RequirePermission>

@@ -125,6 +125,123 @@ export function validateOutput(output: string): {
   return { valid: issues.length === 0, issues };
 }
 
+// ============ TOKEN COUNTING ============
+
+/**
+ * Estimate token count using a simple heuristic.
+ * English text averages roughly 1 token per 4 characters.
+ * This is a reasonable approximation without running a full tokenizer.
+ */
+export function estimateTokenCount(text: string): number {
+  // Simple heuristic: 1 token per 4 characters
+  return Math.ceil(text.length / 4);
+}
+
+// ============ PROMPT INJECTION DETECTION ============
+
+/**
+ * Patterns to detect common prompt injection attacks on input.
+ * These catch attempts to override system instructions or role-play as different entities.
+ */
+const PROMPT_INJECTION_PATTERNS = [
+  // Direct instruction overrides
+  /ignore\s+(all\s+)?previous\s+instructions/i,
+  /ignore\s+(all\s+)?instructions/i,
+  /disregard\s+(all\s+)?(previous\s+)?instructions/i,
+
+  // System prompt exposure attempts
+  /show\s+(me\s+)?(?:the\s+)?system\s+prompt/i,
+  /what\s+(?:is\s+)?(?:the\s+)?system\s+prompt/i,
+  /system\s*prompt/i,
+  /system\s+message/i,
+
+  // Role-playing jailbreaks
+  /you\s+are\s+now\s+(?:a|an)\s+/i,
+  /pretend\s+(?:you\s+)?(?:are|to\s+be)\s+/i,
+  /act\s+as\s+(?:if\s+)?/i,
+  /act\s+like\s+/i,
+  /behave\s+as\s+(?:if\s+)?/i,
+  /role\s*play(?:ing)?\s+as\s+/i,
+
+  // Jailbreak keywords
+  /jailbreak/i,
+  /bypass(?:\s+security)?/i,
+  /override/i,
+
+  // Delimiter injection attempts
+  /```[\s\S]*?system[\s\S]*?```/i,
+  /<system>/i,
+  /<\|im_start\|>/i,
+  /<\|im_end\|>/i,
+];
+
+/**
+ * Detect prompt injection patterns in input text.
+ * Returns true if suspicious patterns are found.
+ */
+export function detectPromptInjection(text: string): {
+  detected: boolean;
+  patterns: string[];
+} {
+  const detectedPatterns: string[] = [];
+
+  for (const pattern of PROMPT_INJECTION_PATTERNS) {
+    if (pattern.test(text)) {
+      detectedPatterns.push(pattern.source);
+    }
+  }
+
+  return {
+    detected: detectedPatterns.length > 0,
+    patterns: detectedPatterns,
+  };
+}
+
+// ============ PRE-FLIGHT VALIDATION ============
+
+/**
+ * Pre-flight validation gate that runs before AI operations.
+ * Validates token limits, detects PII, and checks for prompt injection.
+ */
+export function preFlightCheck(input: string, maxTokens: number = 8000): {
+  approved: boolean;
+  reason?: string;
+  sanitizedInput?: string;
+} {
+  // Check 1: Token count limit
+  const tokenCount = estimateTokenCount(input);
+  if (tokenCount > maxTokens) {
+    return {
+      approved: false,
+      reason: `Input exceeds token limit (${tokenCount} tokens > ${maxTokens} max)`,
+    };
+  }
+
+  // Check 2: PII Detection and sanitization
+  const { sanitized, blocked, classifications } = classifyAndSanitize(input);
+  if (blocked) {
+    return {
+      approved: false,
+      reason: `Input blocked — contains restricted data (${classifications.map((c) => c.label).join(', ')})`,
+    };
+  }
+
+  // Check 3: Prompt injection detection
+  const injectionCheck = detectPromptInjection(input);
+  if (injectionCheck.detected) {
+    return {
+      approved: false,
+      reason: `Prompt injection detected — contains suspicious patterns (${injectionCheck.patterns.slice(0, 2).join(', ')})`,
+    };
+  }
+
+  // All checks passed
+  return {
+    approved: true,
+    sanitizedInput: sanitized,
+  };
+}
+
 // ============ RATE LIMITING ============
 
 const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
@@ -193,8 +310,29 @@ export class GovernedAIClientWrapper implements AIClient {
       throw new Error('AI rate limit exceeded. Please wait before making another request.');
     }
 
-    // 2. Classify and sanitize input context
+    // 2. Pre-flight validation gate (runs BEFORE AI operation)
     const contextString = JSON.stringify(inputContext);
+    const preflight = preFlightCheck(contextString, config.ai.maxTokensPerRequest || 8000);
+
+    if (!preflight.approved) {
+      auditLogger.log({
+        userId: this.userId,
+        userEmail: this.userEmail || '',
+        tenantId: this.tenantId,
+        action: 'AI_REQUEST',
+        entityType: 'AIResponse',
+        entityId: operation,
+        module: 'ai-governance',
+        metadata: { operation, preFlightBlocked: true, reason: preflight.reason },
+        success: false,
+        errorMessage: `Pre-flight check failed: ${preflight.reason}`,
+        riskLevel: 'high',
+        source: 'system',
+      });
+      throw new Error(`AI request blocked — ${preflight.reason}`);
+    }
+
+    // 3. Classify and sanitize input context (using pre-flight sanitized input)
     const { sanitized, classifications, blocked } = classifyAndSanitize(contextString);
 
     if (blocked) {
@@ -215,7 +353,7 @@ export class GovernedAIClientWrapper implements AIClient {
       throw new Error('AI request blocked — input contains restricted data that cannot be sent to AI models.');
     }
 
-    // 3. Log the request
+    // 4. Log the request
     auditLogger.log({
       userId: this.userId,
       userEmail: '',
@@ -229,6 +367,7 @@ export class GovernedAIClientWrapper implements AIClient {
         classifications,
         inputSizeBytes: contextString.length,
         sanitizedSizeBytes: sanitized.length,
+        estimatedTokens: estimateTokenCount(contextString),
         provider: config.ai.provider,
         model: 'claude-opus-4',
       },
@@ -237,12 +376,12 @@ export class GovernedAIClientWrapper implements AIClient {
       source: 'ui',
     });
 
-    // 4. Execute the AI call
+    // 5. Execute the AI call
     const startTime = Date.now();
     const result = await call();
     const durationMs = Date.now() - startTime;
 
-    // 5. Validate output
+    // 6. Validate output
     if (typeof result === 'string') {
       const validation = validateOutput(result);
       auditLogger.log({

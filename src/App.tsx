@@ -9,6 +9,7 @@ import { getTelemetry, setTelemetryContext } from './telemetry';
 import { getConfig } from './config';
 import EnvironmentBanner from './components/EnvironmentBanner'; // CISO-009
 import { authorizeRoute } from './security/AuthorizationMiddleware'; // CISO-003
+import { useThemeStore } from './store/themeStore';
 
 // Lazy load page components
 const DashboardPage = React.lazy(() => import('./pages/Dashboard'));
@@ -60,6 +61,7 @@ function ModuleBoundary({ module, children }: { module: string; children: React.
  */
 function RequireRoutePermission({ path, children }: { path: string; children: React.ReactNode }) {
   const { user } = useAuth();
+  const { isDark } = useThemeStore();
 
   if (!user) {
     return <LoginPage />;
@@ -69,22 +71,22 @@ function RequireRoutePermission({ path, children }: { path: string; children: Re
 
   if (!decision.allowed) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
-        <div className="max-w-md mx-auto p-8 bg-slate-900 border border-red-800/50 rounded-lg text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-900/30 flex items-center justify-center">
+      <div className={`flex items-center justify-center min-h-screen ${isDark ? 'bg-slate-950' : 'bg-gray-100'}`}>
+        <div className={`max-w-md mx-auto p-8 ${isDark ? 'bg-slate-900 border-red-800/50' : 'bg-white border-red-200'} border rounded-lg text-center`}>
+          <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${isDark ? 'bg-red-900/30' : 'bg-red-100'} flex items-center justify-center`}>
             <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">Access Denied</h2>
-          <p className="text-sm text-slate-400 mb-4">{decision.reason}</p>
-          <p className="text-xs text-slate-500">
+          <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'} mb-2`}>Access Denied</h2>
+          <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'} mb-4`}>{decision.reason}</p>
+          <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
             Module: {decision.rule?.description || path}<br />
             Your roles: {user.roles?.join(', ') || 'None'}
           </p>
           <button
             onClick={() => window.history.back()}
-            className="mt-6 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded text-sm"
+            className={`mt-6 px-4 py-2 ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-slate-800'} rounded text-sm`}
           >
             Go Back
           </button>
@@ -99,10 +101,11 @@ function RequireRoutePermission({ path, children }: { path: string; children: Re
 // Health indicator footer (visible in non-production)
 function HealthIndicator() {
   const config = getConfig();
+  const { isDark } = useThemeStore();
   if (config.app.environment === 'production') return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/90 border-t border-slate-700 px-4 py-1 flex items-center justify-between text-xs text-slate-500">
+    <div className={`fixed bottom-0 left-0 right-0 z-50 ${isDark ? 'bg-slate-900/90 border-slate-700' : 'bg-white/90 border-gray-200'} border-t px-4 py-1 flex items-center justify-between text-xs text-slate-500`}>
       <span>IRM Command v{config.app.version} | {config.app.environment}</span>
       <span className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />

@@ -73,8 +73,8 @@ const config: AppConfig = {
       : 24 * 60 * 60 * 1000, // 24 hours for development
     maxLoginAttempts: 5,
     csrfProtection: true,
-    // CISO-004: Strict CSP — no unsafe-inline for scripts, Google Fonts allowed until self-hosted
-    contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; report-uri /api/csp-report; report-to csp-violations",
+    // CISO-004: Strict CSP — no unsafe-inline for scripts, self-hosted fonts only
+    contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; report-uri /api/csp-report; report-to csp-violations",
   },
   ai: {
     provider: 'claude-governed',

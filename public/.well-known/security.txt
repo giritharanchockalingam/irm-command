@@ -1,9 +1,7 @@
-# IRM Command Security Policy
-# https://securitytxt.org/
-
-Contact: mailto:security@irmcommand.com
+Contact: mailto:security@irmcommand.io
 Expires: 2027-03-25T00:00:00.000Z
+Encryption: https://irmcommand.io/.well-known/pgp-key.txt
+Acknowledgments: https://irmcommand.io/security-policy.html
 Preferred-Languages: en
-Canonical: https://irmcommand.com/.well-known/security.txt
-Policy: https://irmcommand.com/security-policy
-Acknowledgments: https://irmcommand.com/security-acknowledgments
+Canonical: https://irmcommand.io/.well-known/security.txt
+Policy: https://irmcommand.io/security-policy.html
