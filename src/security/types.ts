@@ -79,6 +79,14 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'workbench:read',
     'copilot:read',
     'audit:read',
+    // Write/execute permissions — CRO has full platform access
+    'risk:write',
+    'control:write',
+    'compliance:write',
+    'issue:write',
+    'workbench:execute',
+    'copilot:interact',
+    'audit:export',
     // Exam and reporting
     'exam:view',
     'exam:generate',
