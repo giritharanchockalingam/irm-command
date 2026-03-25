@@ -327,46 +327,57 @@ export default function Workbench() {
   }, [calculateScores]);
 
   return (
-    <div className="h-screen bg-gray-900 text-gray-100 p-6">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2">Risk Scoring Studio</h1>
-        <p className="text-gray-400">AI-powered scenario assessment and resilience analysis</p>
+    <div className="min-h-screen bg-navy-950 text-gray-100 p-6">
+      {/* Page Header with clear explanation */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-white mb-2">Risk Scoring Studio</h1>
+        <p className="text-cyan-400 text-base font-medium mb-3">
+          AI-powered scenario assessment and resilience analysis for G-SIB risk management
+        </p>
+        <div className="bg-navy-900 border border-slate-700 rounded-lg p-4 text-sm text-slate-200 leading-relaxed">
+          <span className="font-semibold text-white">How it works:</span>{' '}
+          Configure a risk scenario on the left panel by selecting a business line, product, geography,
+          and risk type. Adjust the inherent risk and control strength sliders, then click{' '}
+          <span className="text-cyan-400 font-semibold">"Run Assessment"</span>{' '}
+          at the bottom of the form to generate a composite risk score, factor decomposition,
+          and AI-generated narrative. You can also load a pre-built scenario to get started quickly.
+        </div>
       </div>
 
-      <div className="flex gap-6 h-[calc(100vh-180px)]">
+      <div className="flex gap-6 h-[calc(100vh-260px)]">
         {/* LEFT PANEL: Scenario Builder */}
         <div className="w-2/5 flex flex-col gap-6 overflow-y-auto pb-6">
           {/* Scenario Form */}
-          <Card className="bg-gray-800 border-gray-700 p-6">
+          <Card className="bg-navy-900 border-slate-700 p-6">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5" />
+              <Zap className="w-5 h-5 text-cyan-400" />
               Scenario Configuration
             </h2>
 
             <div className="space-y-4">
               {/* Scenario Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-semibold text-slate-100 mb-2">
                   Scenario Name
                 </label>
                 <input
                   type="text"
                   value={formData.scenarioName}
                   onChange={(e) => handleFormChange('scenarioName', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500"
                   placeholder="Enter scenario name"
                 />
               </div>
 
               {/* Business Line */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-semibold text-slate-100 mb-2">
                   Business Line
                 </label>
                 <select
                   value={formData.businessLine}
                   onChange={(e) => handleFormChange('businessLine', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white focus:outline-none focus:border-cyan-500"
                 >
                   {BUSINESS_LINES.map((line) => (
                     <option key={line} value={line}>
@@ -378,11 +389,11 @@ export default function Workbench() {
 
               {/* Product */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Product</label>
+                <label className="block text-sm font-semibold text-slate-100 mb-2">Product</label>
                 <select
                   value={formData.product}
                   onChange={(e) => handleFormChange('product', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white focus:outline-none focus:border-cyan-500"
                 >
                   {availableProducts.map((prod) => (
                     <option key={prod} value={prod}>
@@ -394,11 +405,11 @@ export default function Workbench() {
 
               {/* Geography */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Geography</label>
+                <label className="block text-sm font-semibold text-slate-100 mb-2">Geography</label>
                 <select
                   value={formData.geography}
                   onChange={(e) => handleFormChange('geography', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white focus:outline-none focus:border-cyan-500"
                 >
                   {GEOGRAPHIES.map((geo) => (
                     <option key={geo} value={geo}>
@@ -410,11 +421,11 @@ export default function Workbench() {
 
               {/* Risk Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Risk Type</label>
+                <label className="block text-sm font-semibold text-slate-100 mb-2">Risk Type</label>
                 <select
                   value={formData.riskType}
                   onChange={(e) => handleFormChange('riskType', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white focus:outline-none focus:border-cyan-500"
                 >
                   {RISK_TYPES.map((type) => (
                     <option key={type} value={type}>
@@ -428,7 +439,7 @@ export default function Workbench() {
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-sm font-medium text-gray-300">Inherent Risk</label>
-                  <span className="text-sm text-gray-400">{formData.inherentRisk}</span>
+                  <span className="text-sm font-bold text-cyan-400">{formData.inherentRisk}</span>
                 </div>
                 <input
                   type="range"
@@ -439,7 +450,7 @@ export default function Workbench() {
                   onChange={(e) => handleFormChange('inherentRisk', parseInt(e.target.value))}
                   className="w-full h-2 bg-gradient-to-r from-green-600 via-yellow-600 to-red-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-slate-300 mt-1">
                   <span>Low</span>
                   <span>Moderate-Low</span>
                   <span>Moderate</span>
@@ -452,7 +463,7 @@ export default function Workbench() {
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-sm font-medium text-gray-300">Control Strength</label>
-                  <span className="text-sm text-gray-400">{formData.controlStrength}</span>
+                  <span className="text-sm font-bold text-cyan-400">{formData.controlStrength}</span>
                 </div>
                 <input
                   type="range"
@@ -463,7 +474,7 @@ export default function Workbench() {
                   onChange={(e) => handleFormChange('controlStrength', parseInt(e.target.value))}
                   className="w-full h-2 bg-gradient-to-r from-red-600 via-yellow-600 to-green-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-slate-300 mt-1">
                   <span>Weak</span>
                   <span>Below Avg</span>
                   <span>Adequate</span>
@@ -474,28 +485,28 @@ export default function Workbench() {
 
               {/* Loss History */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-semibold text-slate-100 mb-2">
                   Loss History (last 12 months, USD)
                 </label>
                 <input
                   type="number"
                   value={formData.lossHistory}
                   onChange={(e) => handleFormChange('lossHistory', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-navy-800 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500"
                   placeholder="0"
                 />
               </div>
 
               {/* Additional Factors */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
+                <label className="block text-sm font-semibold text-slate-100 mb-3">
                   Additional Factors
                 </label>
                 <div className="space-y-2">
                   {ADDITIONAL_FACTORS_OPTIONS.map((factor) => (
                     <label
                       key={factor.value}
-                      className="flex items-center gap-2 cursor-pointer text-gray-300 hover:text-gray-100"
+                      className="flex items-center gap-2 cursor-pointer text-slate-200 hover:text-white"
                     >
                       <input
                         type="checkbox"
@@ -513,11 +524,11 @@ export default function Workbench() {
                             );
                           }
                         }}
-                        className="w-4 h-4 bg-gray-700 border-gray-600 rounded cursor-pointer"
+                        className="w-4 h-4 bg-navy-800 border-slate-500 rounded cursor-pointer accent-cyan-500"
                       />
                       <span className="text-sm">
                         {factor.label}{' '}
-                        <span className="text-xs text-gray-400">(+{factor.adjustment})</span>
+                        <span className="text-xs text-cyan-400 font-medium">(+{factor.adjustment})</span>
                       </span>
                     </label>
                   ))}
@@ -528,7 +539,7 @@ export default function Workbench() {
             <RequirePermission permission="workbench:execute">
               <button
                 onClick={calculateScores}
-                className="w-full mt-6 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                className="w-full mt-6 px-4 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base shadow-lg shadow-cyan-600/20"
               >
                 <TrendingUp className="w-5 h-5" />
                 Run Assessment
@@ -544,12 +555,12 @@ export default function Workbench() {
                 <button
                   key={scenario.name}
                   onClick={() => loadPreBuiltScenario(scenario)}
-                  className="p-3 bg-gray-800 border border-gray-700 rounded-lg hover:border-blue-500 hover:bg-gray-750 transition text-left group"
+                  className="p-3 bg-navy-900 border border-slate-700 rounded-lg hover:border-cyan-500 hover:bg-navy-800 transition text-left group"
                 >
-                  <h4 className="font-semibold text-white group-hover:text-blue-400 transition">
+                  <h4 className="font-semibold text-white group-hover:text-cyan-400 transition">
                     {scenario.name}
                   </h4>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-slate-300 mt-1">
                     {scenario.businessLine} • {scenario.riskType}
                   </p>
                 </button>
@@ -621,18 +632,18 @@ export default function Workbench() {
               </Card>
 
               {/* Score Decomposition */}
-              <Card className="bg-gray-800 border-gray-700 p-6">
+              <Card className="bg-navy-900 border-slate-700 p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Score Decomposition</h3>
                 <div className="space-y-4">
                   {scoringResult.factorContributions.map((factor) => (
                     <div key={factor.name}>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-300 font-medium">{factor.name}</span>
-                        <span className="text-gray-400">
+                        <span className="text-slate-100 font-medium">{factor.name}</span>
+                        <span className="text-slate-300">
                           Weight: {(factor.weight * 100).toFixed(0)}% • Value: {factor.value.toFixed(2)}
                         </span>
                       </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div className="w-full bg-slate-700 rounded-full h-2">
                         <div
                           className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full"
                           style={{
@@ -640,7 +651,7 @@ export default function Workbench() {
                           }}
                         />
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-slate-400 mt-1">
                         Contribution: {(factor.contribution * 100).toFixed(1)}%
                       </div>
                     </div>
@@ -649,7 +660,7 @@ export default function Workbench() {
               </Card>
 
               {/* Scoring Logic */}
-              <Card className="bg-gray-800 border-gray-700 p-6">
+              <Card className="bg-navy-900 border-slate-700 p-6">
                 <button
                   onClick={() => setShowScoringLogic(!showScoringLogic)}
                   className="w-full flex items-center justify-between font-semibold text-white hover:text-blue-400 transition"
@@ -664,13 +675,13 @@ export default function Workbench() {
                 </button>
 
                 {showScoringLogic && (
-                  <div className="mt-4 p-3 bg-gray-700/50 rounded text-sm text-gray-300 font-mono text-xs">
-                    <p className="mb-3 text-gray-400">
+                  <div className="mt-4 p-3 bg-navy-800/80 rounded text-sm text-slate-200 font-mono text-xs">
+                    <p className="mb-3 text-slate-300">
                       Composite = (InherentRisk × 0.30) + ((6 - ControlStrength) × 0.25) +
                       (LossHistoryFactor × 0.15) + (BusinessComplexity × 0.10) +
                       (RegulatoryFactor × 0.10) + (AdditionalFactors × 0.10)
                     </p>
-                    <p className="text-gray-500">
+                    <p className="text-slate-400">
                       Where each component is normalized to [0, 1] and the final result is scaled to [1, 5]
                     </p>
                   </div>
@@ -678,7 +689,7 @@ export default function Workbench() {
               </Card>
 
               {/* AI Assessment Narrative */}
-              <Card className="bg-gray-800 border-gray-700 p-6">
+              <Card className="bg-navy-900 border-slate-700 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white">AI Risk Assessment</h3>
                   <button
@@ -688,7 +699,7 @@ export default function Workbench() {
                     Regenerate
                   </button>
                 </div>
-                <div className="text-gray-300 text-sm leading-relaxed">
+                <div className="text-slate-200 text-sm leading-relaxed">
                   <StreamingText text={scoringResult.narrative} />
                 </div>
               </Card>
@@ -696,20 +707,33 @@ export default function Workbench() {
               {/* Export Button */}
               <button
                 onClick={() => setShowJsonModal(true)}
-                className="w-full px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
               >
                 <Download className="w-5 h-5" />
                 Export JSON
               </button>
             </>
           ) : (
-            <Card className="bg-gray-800 border-gray-700 p-12 flex items-center justify-center h-96">
+            <Card className="bg-navy-900 border-slate-700 p-12 flex items-center justify-center h-96">
               <div className="text-center">
-                <Zap className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                <p className="text-gray-400 text-lg">Run an assessment to see results</p>
-                <p className="text-gray-500 text-sm mt-2">
-                  Configure a scenario and click "Run Assessment" to generate scores
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-cyan-600/10 border-2 border-cyan-600/30 flex items-center justify-center">
+                  <Zap className="w-10 h-10 text-cyan-400" />
+                </div>
+                <p className="text-white text-xl font-semibold mb-2">Assessment Results</p>
+                <p className="text-slate-300 text-sm mb-6 max-w-md leading-relaxed">
+                  Configure your risk scenario in the left panel — select a business line,
+                  product, geography, and risk type — then click the button below to generate
+                  a composite risk score with AI-powered analysis.
                 </p>
+                <RequirePermission permission="workbench:execute">
+                  <button
+                    onClick={calculateScores}
+                    className="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 mx-auto text-base shadow-lg shadow-cyan-600/20"
+                  >
+                    <TrendingUp className="w-5 h-5" />
+                    Run Assessment
+                  </button>
+                </RequirePermission>
               </div>
             </Card>
           )}
@@ -720,7 +744,7 @@ export default function Workbench() {
       {showJsonModal && scoringResult && (
         <Modal onClose={() => setShowJsonModal(false)} title="Export Assessment Results">
           <div className="space-y-4">
-            <div className="bg-gray-900 p-4 rounded text-xs text-gray-300 font-mono max-h-96 overflow-y-auto">
+            <div className="bg-navy-950 p-4 rounded text-xs text-slate-200 font-mono max-h-96 overflow-y-auto">
               <pre>
                 {JSON.stringify(
                   {
