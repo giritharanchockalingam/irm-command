@@ -16,6 +16,7 @@ import { getDataAccess } from '../data/DataAccessLayer';
 import { Control, Risk, RegulatoryChange, Issue, Framework } from '../domain/types';
 import { TemplateEngine } from '../ai/local/templateEngine';
 import { useThemeStore } from '../store/themeStore';
+import { useIndustryStore } from '../store/industryStore';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
@@ -74,6 +75,7 @@ const SOURCE_COLORS: Record<string, string> = {
 export default function Compliance() {
   const { can: canPerform } = useSecurity();
   const isDark = useThemeStore((s) => s.isDark);
+  const industryId = useIndustryStore((s) => s.industryId);
   const [activeTab, setActiveTab] = useState<ComplianceTab>('controls');
   const [frameworkFilter, setFrameworkFilter] = useState<FrameworkFilter>('All');
   const [issueSourceFilter, setIssueSourceFilter] = useState<IssueSourceFilter>('All');

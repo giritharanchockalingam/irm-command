@@ -257,7 +257,7 @@ function Layout() {
     }
 
     return alerts;
-  }, []);
+  }, [industryId]);
   const notificationCount = notifications.length;
 
   return (

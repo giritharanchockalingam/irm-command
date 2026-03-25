@@ -12,6 +12,7 @@ import {
 import RiskNarrativeCard from '../components/RiskNarrativeCard';
 import { useSecurity } from '../security/SecurityContext';
 import { useThemeStore } from '../store/themeStore';
+import { useIndustryStore } from '../store/industryStore';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { RiskScenario } from '../domain/types';
 import { TemplateEngine } from '../ai/local/templateEngine';
@@ -161,6 +162,7 @@ const getScoreBgColor = (score: number): string => {
 export default function Workbench() {
   const { can: canPerform } = useSecurity();
   const isDark = useThemeStore((state) => state.isDark);
+  const industryId = useIndustryStore((s) => s.industryId);
 
   const dal = getDataAccess();
   const riskScenarios = dal.getRiskScenarios();

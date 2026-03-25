@@ -28,6 +28,7 @@ import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
 import { Modal } from '../components/ui/Modal';
 import { Table } from '../components/ui/Table';
+import { useIndustryStore } from '../store/industryStore';
 import { useAppStore } from '../store/appStore';
 import { useThemeStore } from '../store/themeStore';
 import { useSecurity, RequirePermission } from '../security/SecurityContext';
@@ -57,6 +58,7 @@ export default function TPRMPage() {
 function VendorRegisterView() {
   const navigate = useNavigate();
   const isDarkMode = useThemeStore((s) => s.isDark);
+  const industryId = useIndustryStore((s) => s.industryId);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
   const [filters, setFilters] = useState<FilterConfig>({ tier: '', criticality: '', slaStatus: '' });
   const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set());
@@ -486,6 +488,7 @@ function VendorRegisterView() {
 function VendorDetailView({ vendorId }: { vendorId: string }) {
   const { can: canPerform } = useSecurity();
   const isDarkMode = useThemeStore((s) => s.isDark);
+  const industryId = useIndustryStore((s) => s.industryId);
   const navigate = useNavigate();
   const [showAIAssessment, setShowAIAssessment] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);

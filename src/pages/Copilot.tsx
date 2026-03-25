@@ -17,6 +17,7 @@ import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
 import { useAppStore } from '../store/appStore';
 import { useThemeStore } from '../store/themeStore';
+import { useIndustryStore } from '../store/industryStore';
 import { useSecurity, RequirePermission } from '../security/SecurityContext';
 
 interface Message {
@@ -142,6 +143,7 @@ const getProactiveAlerts = (module: string): ProactiveAlert[] => {
 const Copilot: React.FC = () => {
   const { can: canPerform } = useSecurity();
   const { isDark } = useThemeStore();
+  const industryId = useIndustryStore((s) => s.industryId);
   const currentModule = useAppStore((s) => s.currentModule);
   const selectedEntityId = useAppStore((s) => s.selectedEntityId);
   const selectedEntityType = useAppStore((s) => s.selectedEntityType);

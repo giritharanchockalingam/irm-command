@@ -9,6 +9,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
+import { useIndustryStore } from '../store/industryStore';
 import { getDataAccess } from '../data/DataAccessLayer';
 
 interface NormalizedException {
@@ -28,6 +29,7 @@ interface NormalizedException {
 
 const Exceptions: React.FC = () => {
   const isDark = useThemeStore((state) => state.isDark);
+  const industryId = useIndustryStore((s) => s.industryId);
   const [filterType, setFilterType] = useState<'All' | 'Findings' | 'KRI Breaches' | 'Alerts'>('All');
   const [filterSeverity, setFilterSeverity] = useState<'All' | 'Critical' | 'High' | 'Medium' | 'Low'>('All');
   const [searchText, setSearchText] = useState('');
