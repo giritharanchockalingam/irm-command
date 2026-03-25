@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, sans-serif;
+  }
+
+  body {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
+  /* Dark mode (default via .dark class on html) */
+  .dark {
+    color-scheme: dark;
+  }
+
+  .dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  /* Light mode */
+  body {
+    @apply bg-gray-50 text-slate-900;
+    color-scheme: light;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-600 rounded-full transition-colors hover:bg-slate-500;
+  }
+
+  /* Dark mode scrollbar */
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700;
+  }
+}
+
+@layer components {
+  /* Streaming text cursor animation */
+  @keyframes cursor-blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    51%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .streaming-cursor {
+    @apply inline-block w-0.5 h-5 bg-current ml-1 align-middle;
+    animation: cursor-blink 1s infinite;
+  }
+
+  /* Alert pulse animation */
+  @keyframes alert-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .alert-pulse {
+    animation: alert-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Enterprise card styling */
+  .card-base {
+    @apply rounded-lg border transition-all duration-200;
+  }
+
+  .card-dark {
+    @apply bg-navy-800 border-slate-700;
+  }
+
+  .card-light {
+    @apply bg-white border-gray-200;
+  }
+
+  /* Severity indicators */
+  .severity-critical {
+    @apply border-l-4 border-l-red-500;
+  }
+
+  .severity-high {
+    @apply border-l-4 border-l-orange-500;
+  }
+
+  .severity-medium {
+    @apply border-l-4 border-l-yellow-500;
+  }
+
+  .severity-low {
+    @apply border-l-4 border-l-blue-500;
+  }
+
+  .severity-info {
+    @apply border-l-4 border-l-cyan-500;
+  }
+
+  /* Smooth theme transitions */
+  .theme-transition {
+    @apply transition-colors duration-300;
+  }
+
+  /* Typography helpers */
+  .heading-lg {
+    @apply font-medium;
+  }
+
+  .heading-xl {
+    @apply font-semibold;
+  }
+
+  .heading-2xl {
+    @apply font-bold;
+  }
+
+  /* Badge animations */
+  @keyframes badge-grow {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .badge-animate {
+    animation: badge-grow 0.2s ease-out;
+  }
+}
