@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { orchestrate, OrchestratorResponse } from '../ai/orchestrator';
+import { sendChatMessage, type ChatMessage, type AIProvider } from '../ai/claudeService';
 
 export interface AIMessage {
   id: string;
@@ -92,31 +92,24 @@ export function useAIAssistant(options?: UseAIAssistantOptions) {
       setIsLoading(true);
 
       try {
-        const response: OrchestratorResponse = await orchestrate({
-          message: content,
-          context: {
-            currentPage: options?.currentPage,
-            selectedEntityId: options?.selectedEntityId,
-            selectedEntityType: options?.selectedEntityType,
-          },
-          conversationHistory: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
+        const history: ChatMessage[] = messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
+        const result = await sendChatMessage(content, history, {
+          module: options?.currentPage || 'ai-command-center',
+          entityId: options?.selectedEntityId,
         });
 
         const assistantMessage: AIMessage = {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
-          content: response.message,
+          content: result.response,
           timestamp: new Date(),
           metadata: {
-            toolsUsed: response.toolsUsed,
-            domain: response.domain,
-            provider: response.provider,
-            ragUsed: response.ragUsed,
-            ragSources: response.ragSources,
-            complexity: response.complexity,
+            provider: result.providerName || result.source,
+            complexity: result.complexity,
           },
         };
 

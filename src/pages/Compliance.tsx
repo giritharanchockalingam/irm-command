@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { Control, Risk, RegulatoryChange, Issue, Framework } from '../domain/types';
-import { TemplateEngine } from '../ai/local/templateEngine';
+import { sendChatMessage } from '../ai/claudeService';
 import { useThemeStore } from '../store/themeStore';
 import { useIndustryStore } from '../store/industryStore';
 import { useClientStore } from '../store/clientStore';
@@ -194,38 +194,22 @@ export default function Compliance() {
       return newMap;
     });
 
-    // Simulate AI analysis with streaming
-    const templateEngine = new TemplateEngine();
-    const analysisPrompt = `Analyze the compliance impact of this regulatory change:
-Title: ${change.title}
-Source: ${change.source}
-Effective Date: ${change.effectiveDate}
-Summary: ${change.summary}
-
-Provide analysis covering: capital impact, reporting changes, control gaps, action plan, and timeline.`;
-
-    // Simulate streaming by using templateEngine
-    setTimeout(() => {
-      const mockAnalysis = `Capital Impact: Estimated impact of $2-5M in capital requirements based on current balance sheet structure.
-
-Reporting Changes: Enhanced quarterly reporting to ${change.source} with new metrics required starting ${change.effectiveDate}.
-
-Control Gaps: Gap identified in current Model Risk Management framework. Three controls need enhancement.
-
-Action Plan:
-1. Update risk models (30 days)
-2. Implement reporting systems (45 days)
-3. Train compliance team (15 days)
-4. Execute testing (30 days)
-
-Timeline: Full implementation required by ${new Date(new Date(change.effectiveDate).getTime() + 90*24*60*60*1000).toLocaleDateString()}`;
-
+    // Call real LLM for compliance impact analysis
+    sendChatMessage(
+      `Analyze the compliance impact of this regulatory change:\nTitle: ${change.title}\nSource: ${change.source}\nEffective Date: ${change.effectiveDate}\nSummary: ${change.summary}\n\nProvide a detailed analysis covering: capital impact, reporting changes, control gaps identified, specific action plan with timelines, and implementation deadline. Reference actual controls and frameworks from the platform data where applicable.`
+    ).then((result) => {
       setRegulatoryAnalyses(prev => {
         const newMap = new Map(prev);
-        newMap.set(changeId, { changeId, isOpen: true, analysis: mockAnalysis, isLoading: false });
+        newMap.set(changeId, { changeId, isOpen: true, analysis: result.response, isLoading: false });
         return newMap;
       });
-    }, 1500);
+    }).catch(() => {
+      setRegulatoryAnalyses(prev => {
+        const newMap = new Map(prev);
+        newMap.set(changeId, { changeId, isOpen: true, analysis: 'Unable to generate analysis. Please try again.', isLoading: false });
+        return newMap;
+      });
+    });
   };
 
   const toggleAnalysisPanel = (changeId: string) => {

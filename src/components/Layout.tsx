@@ -26,7 +26,7 @@ import { useIndustryStore } from '../store/industryStore';
 import { useClientStore } from '../store/clientStore';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { getIndustryConfig } from '../config/industries';
-import { orchestrate } from '../ai/orchestrator';
+import { sendChatMessage, type AIProvider, type ChatMessage } from '../ai/claudeService';
 import { FormattedMessage } from './FormattedMessage';
 
 interface NavItem {
@@ -50,6 +50,8 @@ const navItems: NavItem[] = [
 interface CopilotMessage {
   role: 'user' | 'assistant';
   text: string;
+  aiSource?: AIProvider;
+  providerName?: string;
 }
 
 function CopilotSidePanel({ isDark, onClose }: { isDark: boolean; onClose: () => void }) {
@@ -66,11 +68,19 @@ function CopilotSidePanel({ isDark, onClose }: { isDark: boolean; onClose: () =>
     setInput('');
     setIsGenerating(true);
 
-    // Call the AI orchestrator
-    orchestrate({ message: trimmed, context: { currentPage: 'copilot' } })
-      .then((response) => {
-        const meta = ` [${response.domain.join(', ')} | ${response.complexity} | ${response.toolsUsed.length} tools]`;
-        setMessages((prev) => [...prev, { role: 'assistant', text: response.message }]);
+    // Build conversation history for context
+    const history: ChatMessage[] = messages
+      .map((m) => ({ role: m.role, content: m.text }));
+
+    // Call the three-tier LLM router via /api/ai-chat
+    sendChatMessage(trimmed, history, { module: 'copilot' })
+      .then((result) => {
+        setMessages((prev) => [...prev, {
+          role: 'assistant',
+          text: result.response,
+          aiSource: result.source,
+          providerName: result.providerName,
+        }]);
       })
       .catch(() => {
         setMessages((prev) => [
@@ -81,7 +91,7 @@ function CopilotSidePanel({ isDark, onClose }: { isDark: boolean; onClose: () =>
       .finally(() => {
         setIsGenerating(false);
       });
-  }, [input, isGenerating]);
+  }, [input, isGenerating, messages]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -140,7 +150,24 @@ function CopilotSidePanel({ isDark, onClose }: { isDark: boolean; onClose: () =>
               {msg.role === 'user' ? (
                 msg.text
               ) : (
-                <FormattedMessage text={msg.text} isDark={isDark} />
+                <>
+                  <FormattedMessage text={msg.text} isDark={isDark} />
+                  {msg.aiSource && (
+                    <div className="mt-2 flex items-center gap-1">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                        msg.aiSource === 'groq'
+                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-400'
+                          : msg.aiSource === 'openai'
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400'
+                          : msg.aiSource === 'claude'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400'
+                          : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                      }`}>
+                        {msg.providerName || msg.aiSource}
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -148,7 +175,7 @@ function CopilotSidePanel({ isDark, onClose }: { isDark: boolean; onClose: () =>
         {isGenerating && (
           <div className="flex justify-start">
             <div className={`rounded-lg p-3 text-sm ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-gray-100 text-gray-500'}`}>
-              <span className="animate-pulse">Analyzing...</span>
+              <span className="animate-pulse">Routing to AI provider...</span>
             </div>
           </div>
         )}

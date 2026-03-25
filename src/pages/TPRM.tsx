@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { Vendor, Control, MonitoringAlert, Risk } from '../domain/types';
-import { TemplateEngine } from '../ai/local/templateEngine';
+import { sendChatMessage } from '../ai/claudeService';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
@@ -510,28 +510,32 @@ function VendorDetailView({ vendorId }: { vendorId: string }) {
   const vendorControls = vendor ? controls.filter((c) => vendor.controlIds.includes(c.id)) : [];
   const vendorAlerts = monitoringAlerts.filter((a) => a.vendorId === vendor?.id);
 
-  const engine = useMemo(() => new TemplateEngine(), []);
-
   const generateAIAssessment = useCallback(async () => {
     if (!vendor) return;
     setShowAIAssessment(true);
-    const narrative = engine.generateVendorNarrative(vendor, vendorControls, vendorAlerts);
-    setAiAssessment(narrative);
-  }, [vendor, vendorControls, vendorAlerts, engine]);
+    const result = await sendChatMessage(
+      `Generate a comprehensive third-party risk assessment for vendor "${vendor.name}". Cover: risk tier (${vendor.tier}), criticality (${vendor.criticality}), SLA status (${vendor.slaStatus}), residual risk score (${vendor.residualRisk}/5), control effectiveness for mapped controls, and recommended management actions. Use formal regulatory assessment language.`
+    );
+    setAiAssessment(result.response);
+  }, [vendor]);
 
   const generateQuestionnaire = useCallback(async () => {
     if (!vendor) return;
     setShowQuestionnaire(true);
-    const questions = engine.generateVendorQuestionnaire(vendor);
-    setQuestionnaire(questions.map((q, i) => `${i + 1}. [${q.category}] ${q.question}`).join('\n'));
-  }, [vendor, engine]);
+    const result = await sendChatMessage(
+      `Generate a due diligence questionnaire for vendor "${vendor.name}" (Tier: ${vendor.tier}, Criticality: ${vendor.criticality}, Category: ${vendor.category || 'General'}). Include 10-15 numbered questions covering: information security, business continuity, data privacy, regulatory compliance, financial stability, and subcontractor management. Format each as: "N. [CATEGORY] Question text"`
+    );
+    setQuestionnaire(result.response);
+  }, [vendor]);
 
   const generateExamNarrative = useCallback(async () => {
     if (!vendor) return;
     setShowExamNarrative(true);
-    const narrative = engine.generateVendorNarrative(vendor, vendorControls, vendorAlerts);
-    setExamNarrative(narrative);
-  }, [vendor, vendorControls, vendorAlerts, engine]);
+    const result = await sendChatMessage(
+      `Generate a regulatory examination narrative for vendor "${vendor.name}" in OCC/FDIC style. Cover: vendor risk profile, control environment, SLA compliance (${vendor.slaStatus}), monitoring findings from ${vendorAlerts.length} alerts, and supervisory expectations. Reference specific data points.`
+    );
+    setExamNarrative(result.response);
+  }, [vendor, vendorAlerts.length]);
 
   if (!vendor) {
     return (

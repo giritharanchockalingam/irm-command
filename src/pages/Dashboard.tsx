@@ -14,7 +14,7 @@ import {
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
-import { TemplateEngine } from '../ai/local/templateEngine';
+import { generateNarrative } from '../ai/claudeService';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { Risk, KRI, Issue } from '../domain/types';
 import { useAppStore } from '../store/appStore';
@@ -166,27 +166,11 @@ const Dashboard: React.FC = () => {
 
   const handleGenerateDigest = useCallback(async () => {
     setIsGeneratingDigest(true);
-    const engine = new TemplateEngine();
 
     try {
-      let template = '';
-      if (digestTab === 'risk') {
-        template = engine.generateDailyDigest(
-          risks,
-          kris,
-          issues,
-          vendors,
-          lossEvents
-        );
-      } else {
-        template = engine.generateExaminerView(
-          risks,
-          controls,
-          issues,
-          kris
-        );
-      }
-      setDigestContent(template);
+      const narrativeType = digestTab === 'risk' ? 'daily-digest' : 'examiner-view';
+      const result = await generateNarrative(narrativeType);
+      setDigestContent(result.response);
     } catch (error) {
       console.error('Error generating digest:', error);
       setDigestContent(
