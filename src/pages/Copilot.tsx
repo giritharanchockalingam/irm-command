@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { TemplateEngine } from '../ai/local/templateEngine';
+import { sendChatMessage, generateNarrative, estimateQueryComplexity, getExpectedProvider, type ChatMessage, type AIProvider } from '../ai/claudeService';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
@@ -27,6 +28,9 @@ interface Message {
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
+  aiSource?: AIProvider;
+  providerName?: string;
+  complexity?: 'simple' | 'medium' | 'complex';
 }
 
 interface ProactiveAlert {
@@ -179,17 +183,6 @@ const Copilot: React.FC = () => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  const generateResponse = useCallback(
-    async (userMessage: string): Promise<string> => {
-      return templateEngine.generateCopilotResponse({
-        module: currentModule,
-        entityId: selectedEntityId || undefined,
-        message: userMessage,
-      });
-    },
-    [currentModule, selectedEntityId, templateEngine]
-  );
-
   const handleSendMessage = useCallback(async () => {
     if (!inputValue.trim()) return;
 
@@ -205,18 +198,48 @@ const Copilot: React.FC = () => {
     setInputValue('');
     setIsLoading(true);
 
-    // Simulate brief thinking delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
     try {
-      const responseText = await generateResponse(userMessage);
+      // Build conversation history for Claude context
+      const history: ChatMessage[] = messages
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .map((m) => ({ role: m.role, content: m.content }));
+
+      // Check if this is a quick-action narrative request
+      const narrativeTypes: Record<string, 'daily-digest' | 'examiner-view' | 'vendor-narrative' | 'risk-assessment' | 'compliance-impact' | 'board-pack'> = {
+        'generate daily posture summary': 'daily-digest',
+        'daily posture summary': 'daily-digest',
+        'daily digest': 'daily-digest',
+        'draft exam response': 'examiner-view',
+        'examiner view': 'examiner-view',
+        'examination report': 'examiner-view',
+        'board pack outline': 'board-pack',
+        'board pack': 'board-pack',
+      };
+
+      let result;
+      const lowerMessage = userMessage.toLowerCase();
+      const matchedNarrative = Object.entries(narrativeTypes).find(([key]) =>
+        lowerMessage.includes(key)
+      );
+
+      if (matchedNarrative) {
+        result = await generateNarrative(matchedNarrative[1]);
+      } else {
+        result = await sendChatMessage(userMessage, history, {
+          module: currentModule,
+          entityId: selectedEntityId || undefined,
+        });
+      }
 
       const newAssistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: responseText,
+        content: result.response,
         timestamp: new Date(),
         isStreaming: true,
+        aiSource: result.source,
+        providerName: result.providerName,
+        complexity: result.complexity,
       };
 
       setMessages((prev) => [...prev, newAssistantMessage]);
@@ -232,7 +255,7 @@ const Copilot: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [inputValue, generateResponse]);
+  }, [inputValue, messages, currentModule, selectedEntityId]);
 
   const handleQuickAction = useCallback(
     (actionId: string, label: string) => {
@@ -390,12 +413,38 @@ const Copilot: React.FC = () => {
                   ) : (
                     <p className="text-sm leading-relaxed">{message.content}</p>
                   )}
-                  <p className="text-xs mt-2 opacity-60">
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <p className="text-xs opacity-60">
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                    {message.role === 'assistant' && message.aiSource && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                        message.aiSource === 'groq'
+                          ? isDark ? 'bg-orange-900/50 text-orange-400' : 'bg-orange-100 text-orange-700'
+                          : message.aiSource === 'openai'
+                          ? isDark ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-700'
+                          : message.aiSource === 'claude'
+                          ? isDark ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-700'
+                          : isDark ? 'bg-gray-600 text-gray-400' : 'bg-gray-200 text-gray-500'
+                      }`}>
+                        {message.providerName || (
+                          message.aiSource === 'groq' ? 'Groq' :
+                          message.aiSource === 'openai' ? 'GPT-4o' :
+                          message.aiSource === 'claude' ? 'Claude' : 'Template'
+                        )}
+                      </span>
+                    )}
+                    {message.role === 'assistant' && message.complexity && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                        isDark ? 'bg-gray-700 text-gray-500' : 'bg-gray-100 text-gray-400'
+                      }`}>
+                        {message.complexity}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -408,10 +457,13 @@ const Copilot: React.FC = () => {
                   <Bot className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
                 <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg rounded-bl-none px-4 py-3`}>
-                  <div className="flex gap-1">
-                    <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce`} />
-                    <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce delay-100`} />
-                    <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce delay-200`} />
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce`} />
+                      <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce delay-100`} />
+                      <div className={`w-2 h-2 ${isDark ? 'bg-gray-500' : 'bg-gray-400'} rounded-full animate-bounce delay-200`} />
+                    </div>
+                    <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Routing to AI provider...</span>
                   </div>
                 </div>
               </div>

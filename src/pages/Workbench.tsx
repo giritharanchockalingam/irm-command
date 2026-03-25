@@ -8,6 +8,7 @@ import {
   AlertCircle,
   TrendingUp,
   Zap,
+  Bot,
 } from 'lucide-react';
 import RiskNarrativeCard from '../components/RiskNarrativeCard';
 import { useSecurity } from '../security/SecurityContext';
@@ -18,6 +19,7 @@ import { type IndustryId } from '../config/industries';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { RiskScenario } from '../domain/types';
 import { TemplateEngine } from '../ai/local/templateEngine';
+import { sendChatMessage, type AIProvider } from '../ai/claudeService';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
@@ -42,6 +44,9 @@ interface ScoringResult {
   factorContributions: FactorContribution[];
   narrative: string;
   timestamp: string;
+  aiSource?: AIProvider;
+  providerName?: string;
+  narrativeLoading?: boolean;
 }
 
 interface FactorContribution {
@@ -317,8 +322,9 @@ export default function Workbench() {
       Math.min(5, formData.inherentRisk - formData.controlStrength * 0.6 + additionalFactorsAdjustment)
     );
 
+    // Generate immediate template narrative while Claude processes
     const templateEngine = new TemplateEngine();
-    const narrative = templateEngine.generateRiskAssessment({
+    const templateNarrative = templateEngine.generateRiskAssessment({
       scenarioName: formData.scenarioName,
       businessLine: formData.businessLine,
       product: formData.product,
@@ -332,12 +338,50 @@ export default function Workbench() {
       factors: factorContributions,
     });
 
+    // Show template result immediately, then upgrade with Claude
+    const roundedComposite = Math.round(compositeScore * 100) / 100;
+    const roundedResidual = Math.round(residualRisk * 100) / 100;
+
     setScoringResult({
-      compositeScore: Math.round(compositeScore * 100) / 100,
-      residualRisk: Math.round(residualRisk * 100) / 100,
+      compositeScore: roundedComposite,
+      residualRisk: roundedResidual,
       factorContributions,
-      narrative,
+      narrative: templateNarrative,
       timestamp: new Date().toISOString(),
+      aiSource: 'template',
+      narrativeLoading: true,
+    });
+
+    // Fire Claude request in background — will upgrade the narrative
+    const claudePrompt = `Generate a professional risk assessment narrative for this scenario:
+
+Scenario: ${formData.scenarioName}
+Business Line: ${formData.businessLine} | Product: ${formData.product} | Geography: ${formData.geography}
+Risk Type: ${formData.riskType}
+Inherent Risk: ${formData.inherentRisk}/5 | Control Strength: ${formData.controlStrength}/5
+Historical Loss: $${formData.lossHistory.toLocaleString()}
+Composite Score: ${roundedComposite}/5 (${getRatingLabel(roundedComposite)})
+Residual Risk: ${roundedResidual}/5
+
+Factor Contributions:
+${factorContributions.map(f => `- ${f.name}: weight=${f.weight}, value=${f.value.toFixed(2)}, contribution=${f.contribution.toFixed(2)}`).join('\n')}
+
+Write a 3-4 paragraph executive risk narrative in OCC/FDIC examination style. Reference the specific numbers above. Include: risk characterization, control environment assessment, loss trend implications, and recommended management actions.`;
+
+    sendChatMessage(claudePrompt).then((result) => {
+      setScoringResult((prev) => prev ? {
+        ...prev,
+        narrative: result.response,
+        aiSource: result.source,
+        providerName: result.providerName,
+        narrativeLoading: false,
+      } : prev);
+    }).catch(() => {
+      // Keep template narrative if Claude fails
+      setScoringResult((prev) => prev ? {
+        ...prev,
+        narrativeLoading: false,
+      } : prev);
     });
   }, [formData]);
 
@@ -746,6 +790,56 @@ export default function Workbench() {
                 factorContributions={scoringResult.factorContributions}
                 onRegenerate={handleRegenerate}
               />
+
+              {/* Claude AI Narrative */}
+              <div className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border rounded-xl`}>
+                <div className={`flex items-center justify-between px-5 py-3 border-b ${isDark ? 'border-slate-700 bg-navy-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                  <div className="flex items-center gap-2.5">
+                    <Bot className="w-5 h-5 text-emerald-400" />
+                    <div>
+                      <h3 className={`text-base font-semibold ${isDark ? 'text-white' : 'text-slate-900'} leading-tight`}>AI Executive Narrative</h3>
+                      <p className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                        {scoringResult.narrativeLoading ? 'Routing to AI provider...' :
+                         scoringResult.aiSource === 'template' ? 'Template-generated (add API keys for AI)' :
+                         `Powered by ${scoringResult.providerName || scoringResult.aiSource}`}
+                      </p>
+                    </div>
+                  </div>
+                  {scoringResult.aiSource && (
+                    <span className={`text-xs px-2 py-0.5 rounded ${
+                      scoringResult.aiSource === 'groq'
+                        ? isDark ? 'bg-orange-900/50 text-orange-400' : 'bg-orange-100 text-orange-700'
+                        : scoringResult.aiSource === 'openai'
+                        ? isDark ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-700'
+                        : scoringResult.aiSource === 'claude'
+                        ? isDark ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-700'
+                        : isDark ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-500'
+                    }`}>
+                      {scoringResult.providerName || (
+                        scoringResult.aiSource === 'groq' ? 'Groq' :
+                        scoringResult.aiSource === 'openai' ? 'GPT-4o' :
+                        scoringResult.aiSource === 'claude' ? 'Claude' : 'Template'
+                      )}
+                    </span>
+                  )}
+                </div>
+                <div className="p-5">
+                  {scoringResult.narrativeLoading ? (
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-1">
+                        <div className={`w-2 h-2 ${isDark ? 'bg-emerald-500' : 'bg-emerald-400'} rounded-full animate-bounce`} />
+                        <div className={`w-2 h-2 ${isDark ? 'bg-emerald-500' : 'bg-emerald-400'} rounded-full animate-bounce`} style={{ animationDelay: '100ms' }} />
+                        <div className={`w-2 h-2 ${isDark ? 'bg-emerald-500' : 'bg-emerald-400'} rounded-full animate-bounce`} style={{ animationDelay: '200ms' }} />
+                      </div>
+                      <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>AI is analyzing your scenario data...</span>
+                    </div>
+                  ) : (
+                    <div className={`text-sm ${isDark ? 'text-slate-200' : 'text-slate-700'} leading-relaxed whitespace-pre-wrap`}>
+                      {scoringResult.narrative}
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Export Button */}
               <button
