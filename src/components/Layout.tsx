@@ -22,6 +22,7 @@ import {
 import { useThemeStore } from '../store/themeStore';
 import { useAppStore } from '../store/appStore';
 import { useAuth } from '../auth/AuthContext';
+import { getDataAccess } from '../data/DataAccessLayer';
 import { orchestrate } from '../ai/orchestrator';
 import { FormattedMessage } from './FormattedMessage';
 
@@ -199,7 +200,62 @@ function Layout() {
   };
 
   const breadcrumbs = getBreadcrumbs();
-  const notificationCount = 3;
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Data-driven notifications from seed data
+  const notifications = useMemo(() => {
+    const dal = getDataAccess();
+    const alerts: { id: string; type: 'critical' | 'warning' | 'info'; title: string; detail: string; time: string }[] = [];
+
+    // Overdue issues
+    const issues = dal.getIssues();
+    const overdueIssues = issues.filter(i => {
+      const due = i.dueDate instanceof Date ? i.dueDate : new Date(i.dueDate);
+      return due < new Date() && i.status !== 'Closed';
+    });
+    if (overdueIssues.length > 0) {
+      alerts.push({
+        id: 'overdue-issues',
+        type: 'critical',
+        title: `${overdueIssues.length} Overdue Issue${overdueIssues.length > 1 ? 's' : ''}`,
+        detail: overdueIssues.slice(0, 2).map(i => i.title).join('; '),
+        time: 'Action required',
+      });
+    }
+
+    // KRI breaches
+    const kris = dal.getKRIs();
+    const breachedKRIs = kris.filter(k => k.breachLevel === 'Breach' || k.breachLevel === 'Critical');
+    if (breachedKRIs.length > 0) {
+      alerts.push({
+        id: 'kri-breaches',
+        type: 'warning',
+        title: `${breachedKRIs.length} KRI${breachedKRIs.length > 1 ? 's' : ''} in Breach`,
+        detail: breachedKRIs.slice(0, 2).map(k => k.name).join('; '),
+        time: 'Monitoring',
+      });
+    }
+
+    // Vendor contracts expiring within 90 days
+    const vendors = dal.getVendors();
+    const expiringVendors = vendors.filter(v => {
+      const expiry = v.contractExpiry instanceof Date ? v.contractExpiry : new Date(v.contractExpiry);
+      const daysUntil = (expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      return daysUntil > 0 && daysUntil <= 90;
+    });
+    if (expiringVendors.length > 0) {
+      alerts.push({
+        id: 'vendor-expiry',
+        type: 'info',
+        title: `${expiringVendors.length} Vendor Contract${expiringVendors.length > 1 ? 's' : ''} Expiring`,
+        detail: expiringVendors.slice(0, 2).map(v => v.name).join('; '),
+        time: 'Within 90 days',
+      });
+    }
+
+    return alerts;
+  }, []);
+  const notificationCount = notifications.length;
 
   return (
     <div className={`flex h-screen ${isDark ? 'bg-navy-950' : 'bg-gray-50'}`}>
@@ -296,14 +352,60 @@ function Layout() {
             </button>
 
             {/* Notifications */}
-            <button className={`relative p-2 rounded-lg ${isDark ? 'hover:bg-navy-800' : 'hover:bg-gray-100'} transition-colors`}>
-              <Bell size={20} />
-              {notificationCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {notificationCount}
-                </span>
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={`relative p-2 rounded-lg ${isDark ? 'hover:bg-navy-800' : 'hover:bg-gray-100'} transition-colors`}
+                aria-label={`${notificationCount} notifications`}
+              >
+                <Bell size={20} />
+                {notificationCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {notificationCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification dropdown */}
+              {showNotifications && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                  <div className={`absolute right-0 top-full mt-2 w-80 z-50 rounded-lg shadow-xl border ${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'}`}>
+                    <div className={`px-4 py-3 border-b ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Notifications</span>
+                        <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{notificationCount} active</span>
+                      </div>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className={`px-4 py-6 text-center text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                          No active notifications
+                        </div>
+                      ) : (
+                        notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className={`px-4 py-3 border-b last:border-0 ${isDark ? 'border-slate-700/50 hover:bg-navy-800' : 'border-gray-100 hover:bg-gray-50'} transition-colors cursor-pointer`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                                n.type === 'critical' ? 'bg-red-500' : n.type === 'warning' ? 'bg-amber-500' : 'bg-cyan-500'
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <div className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{n.title}</div>
+                                <div className={`text-xs mt-0.5 truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{n.detail}</div>
+                                <div className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{n.time}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
               )}
-            </button>
+            </div>
 
             {/* User info + logout */}
             {user && (

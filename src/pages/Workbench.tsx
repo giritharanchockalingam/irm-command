@@ -347,11 +347,11 @@ export default function Workbench() {
         </div>
       </div>
 
-      <div className="flex gap-6 h-[calc(100vh-260px)]">
+      <div className="flex gap-6 h-[calc(100vh-280px)]">
         {/* LEFT PANEL: Scenario Builder */}
-        <div className="w-2/5 flex flex-col overflow-hidden">
+        <div className="w-2/5 flex flex-col">
           {/* Scrollable form area */}
-          <div className="flex-1 overflow-y-auto space-y-6 pb-4">
+          <div className="flex-1 overflow-y-auto space-y-6 pb-2 min-h-0">
           {/* Scenario Form */}
           <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-6`}>
             <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'} mb-4 flex items-center gap-2`}>
@@ -565,12 +565,12 @@ export default function Workbench() {
           </div>
           </div>
 
-          {/* Sticky Run Assessment Button — always visible */}
-          <div className={`pt-3 border-t ${isDark ? 'border-slate-700' : 'border-gray-300'} mt-2`}>
+          {/* Sticky Run Assessment Button — always visible at bottom of left panel */}
+          <div className={`flex-shrink-0 pt-3 pb-1 border-t ${isDark ? 'border-slate-700 bg-navy-950' : 'border-gray-300 bg-gray-50'}`}>
             <RequirePermission permission="workbench:execute">
               <button
                 onClick={calculateScores}
-                className="w-full px-4 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base shadow-lg shadow-cyan-600/20"
+                className="w-full px-4 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base shadow-lg shadow-cyan-600/30 active:scale-[0.98]"
               >
                 <TrendingUp className="w-5 h-5" />
                 Run Assessment
