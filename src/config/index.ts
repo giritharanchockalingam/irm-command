@@ -43,27 +43,38 @@ export interface AppConfig {
   };
 }
 
-// Default prototype config - sensible defaults for prototype mode
+// CISO-009 REMEDIATION: Environment-aware configuration
+// Environment is determined by VITE_ENV variable, NOT hardcoded
+const resolvedEnvironment = (
+  import.meta.env?.VITE_ENV as AppConfig['app']['environment']
+) || 'development';
+
+// CISO-009: Production enforcement — block unsafe defaults
+const isProductionEnv = resolvedEnvironment === 'production' || resolvedEnvironment === 'staging';
+
 const config: AppConfig = {
   app: {
     name: 'IRM Command',
-    version: '1.0.0-prototype',
-    buildHash: 'proto-' + new Date().toISOString().split('T')[0],
-    environment: 'prototype',
+    version: import.meta.env?.VITE_APP_VERSION || '1.0.0',
+    buildHash: import.meta.env?.VITE_BUILD_HASH || 'dev-' + new Date().toISOString().split('T')[0],
+    environment: resolvedEnvironment,
   },
   features: {
     enableGovernedAI: true,
-    enableMultiTenant: false,
+    enableMultiTenant: isProductionEnv, // CISO-009: Multi-tenant required in prod
     enableAuditLog: true,
-    enableTelemetry: false,
+    enableTelemetry: isProductionEnv, // CISO-007: Telemetry enabled in prod/staging
     enableRBAC: true,
-    enableSSO: false,
+    enableSSO: isProductionEnv, // CISO-001: SSO required in prod
   },
   security: {
-    sessionTimeoutMs: 24 * 60 * 60 * 1000, // 24 hours for prototype
+    sessionTimeoutMs: isProductionEnv
+      ? 30 * 60 * 1000   // CISO-001: 30 min idle timeout in production
+      : 24 * 60 * 60 * 1000, // 24 hours for development
     maxLoginAttempts: 5,
     csrfProtection: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;",
+    // CISO-004: Strict CSP — no unsafe-inline for scripts, Google Fonts allowed until self-hosted
+    contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; report-uri /api/csp-report; report-to csp-violations",
   },
   ai: {
     provider: 'claude-governed',
@@ -71,9 +82,9 @@ const config: AppConfig = {
     rateLimitPerMinute: 30,
   },
   tenant: {
-    id: 'TNT-001',
-    name: 'Default Prototype Tenant',
-    region: 'us-east-1',
+    id: import.meta.env?.VITE_TENANT_ID || 'TNT-001',
+    name: import.meta.env?.VITE_TENANT_NAME || 'Default Development Tenant',
+    region: import.meta.env?.VITE_TENANT_REGION || 'us-east-1',
   },
   supabase: {
     url: import.meta.env?.VITE_SUPABASE_URL || '',
@@ -81,9 +92,28 @@ const config: AppConfig = {
     schema: import.meta.env?.VITE_SUPABASE_SCHEMA || 'irm',
   },
   auth: {
-    mode: (import.meta.env?.VITE_AUTH_MODE as 'demo' | 'supabase') || 'demo',
+    // CISO-001: Force non-demo auth in production/staging
+    mode: isProductionEnv
+      ? 'supabase'
+      : ((import.meta.env?.VITE_AUTH_MODE as 'demo' | 'supabase') || 'demo'),
   },
 };
+
+// CISO-009: Runtime validation — fail loudly if production has unsafe config
+if (isProductionEnv) {
+  if (config.auth.mode === 'demo') {
+    throw new Error(
+      '[SECURITY VIOLATION] Demo auth mode is forbidden in production/staging. ' +
+      'Set VITE_AUTH_MODE=supabase or VITE_AUTH_MODE=oidc.'
+    );
+  }
+  if (!config.supabase.url || !config.supabase.anonKey) {
+    console.error(
+      '[SECURITY] Supabase credentials not configured for production. ' +
+      'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.'
+    );
+  }
+}
 
 /**
  * Get the immutable app configuration.

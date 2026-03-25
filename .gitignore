@@ -1,7 +1,24 @@
 node_modules/
 dist/
-.env
-.env.local
 *.log
 .DS_Store
 .tmp/
+
+# CISO-002: Prevent credential exposure in version control
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.*.local
+*.pem
+*.key
+*.cert
+credentials.json
+service-account.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

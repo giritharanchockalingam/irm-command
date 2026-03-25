@@ -2,11 +2,13 @@ import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import { SecurityProvider } from './security/SecurityContext';
-import { AuthProvider, RequireAuth } from './auth/AuthContext';
+import { AuthProvider, RequireAuth, useAuth } from './auth/AuthContext';
 import LoginPage from './auth/LoginPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { getTelemetry, setTelemetryContext } from './telemetry';
 import { getConfig } from './config';
+import EnvironmentBanner from './components/EnvironmentBanner'; // CISO-009
+import { authorizeRoute } from './security/AuthorizationMiddleware'; // CISO-003
 
 // Lazy load page components
 const DashboardPage = React.lazy(() => import('./pages/Dashboard'));
@@ -50,6 +52,50 @@ function ModuleBoundary({ module, children }: { module: string; children: React.
   );
 }
 
+/**
+ * CISO-003 REMEDIATION: Route-level permission guard.
+ * Enforces authorization BEFORE rendering any module content.
+ * Works in conjunction with RequireAuth — this adds permission checks
+ * beyond simple authentication.
+ */
+function RequireRoutePermission({ path, children }: { path: string; children: React.ReactNode }) {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  const decision = authorizeRoute(user, path);
+
+  if (!decision.allowed) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+        <div className="max-w-md mx-auto p-8 bg-slate-900 border border-red-800/50 rounded-lg text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-900/30 flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-white mb-2">Access Denied</h2>
+          <p className="text-sm text-slate-400 mb-4">{decision.reason}</p>
+          <p className="text-xs text-slate-500">
+            Module: {decision.rule?.description || path}<br />
+            Your roles: {user.roles?.join(', ') || 'None'}
+          </p>
+          <button
+            onClick={() => window.history.back()}
+            className="mt-6 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded text-sm"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 // Health indicator footer (visible in non-production)
 function HealthIndicator() {
   const config = getConfig();
@@ -81,6 +127,7 @@ function TelemetryInitializer() {
 function AppRoutes() {
   return (
     <>
+      <EnvironmentBanner />
       <NavigationTracker />
       <TelemetryInitializer />
       <Routes>
@@ -96,16 +143,17 @@ function AppRoutes() {
             </RequireAuth>
           }
         >
-          <Route path="/dashboard" element={<ModuleBoundary module="Dashboard"><DashboardPage /></ModuleBoundary>} />
-          <Route path="/tprm" element={<ModuleBoundary module="TPRM"><TPRMPage /></ModuleBoundary>} />
-          <Route path="/tprm/:vendorId" element={<ModuleBoundary module="TPRM"><TPRMPage /></ModuleBoundary>} />
-          <Route path="/compliance" element={<ModuleBoundary module="Compliance"><CompliancePage /></ModuleBoundary>} />
-          <Route path="/workbench" element={<ModuleBoundary module="Workbench"><WorkbenchPage /></ModuleBoundary>} />
-          <Route path="/copilot" element={<ModuleBoundary module="Copilot"><CopilotPage /></ModuleBoundary>} />
-          <Route path="/ai" element={<ModuleBoundary module="AICommandCenter"><AICommandCenterPage /></ModuleBoundary>} />
-          <Route path="/control-register" element={<ModuleBoundary module="ControlRegister"><ControlRegisterPage /></ModuleBoundary>} />
-          <Route path="/exceptions" element={<ModuleBoundary module="Exceptions"><ExceptionsPage /></ModuleBoundary>} />
-          <Route path="/architecture" element={<ModuleBoundary module="Architecture"><ArchitecturePage /></ModuleBoundary>} />
+          {/* CISO-003: Every route wrapped with permission enforcement */}
+          <Route path="/dashboard" element={<RequireRoutePermission path="/dashboard"><ModuleBoundary module="Dashboard"><DashboardPage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/tprm" element={<RequireRoutePermission path="/tprm"><ModuleBoundary module="TPRM"><TPRMPage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/tprm/:vendorId" element={<RequireRoutePermission path="/tprm"><ModuleBoundary module="TPRM"><TPRMPage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/compliance" element={<RequireRoutePermission path="/compliance"><ModuleBoundary module="Compliance"><CompliancePage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/workbench" element={<RequireRoutePermission path="/workbench"><ModuleBoundary module="Workbench"><WorkbenchPage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/copilot" element={<RequireRoutePermission path="/copilot"><ModuleBoundary module="Copilot"><CopilotPage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/ai" element={<RequireRoutePermission path="/ai"><ModuleBoundary module="AICommandCenter"><AICommandCenterPage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/control-register" element={<RequireRoutePermission path="/control-register"><ModuleBoundary module="ControlRegister"><ControlRegisterPage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/exceptions" element={<RequireRoutePermission path="/exceptions"><ModuleBoundary module="Exceptions"><ExceptionsPage /></ModuleBoundary></RequireRoutePermission>} />
+          <Route path="/architecture" element={<RequireRoutePermission path="/architecture"><ModuleBoundary module="Architecture"><ArchitecturePage /></ModuleBoundary></RequireRoutePermission>} />
         </Route>
 
         {/* 404 catch-all */}

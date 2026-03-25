@@ -1,0 +1,21 @@
+# IRM Command - Robots Exclusion
+User-agent: *
+Disallow: /login
+Disallow: /auth
+Disallow: /api
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /workbench
+Disallow: /copilot
+Disallow: /compliance
+Disallow: /tprm
+Disallow: /control-register
+Disallow: /exceptions
+Disallow: /architecture
+
+# Block all sensitive paths
+Disallow: /.env
+Disallow: /config
+Disallow: /.well-known/
+
+# No sitemap for authenticated application

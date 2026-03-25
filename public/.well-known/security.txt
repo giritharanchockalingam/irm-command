@@ -1,0 +1,9 @@
+# IRM Command Security Policy
+# https://securitytxt.org/
+
+Contact: mailto:security@irmcommand.com
+Expires: 2027-03-25T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://irmcommand.com/.well-known/security.txt
+Policy: https://irmcommand.com/security-policy
+Acknowledgments: https://irmcommand.com/security-acknowledgments

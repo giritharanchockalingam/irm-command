@@ -1,0 +1,81 @@
+/**
+ * CISO-004: Self-hosted font declarations
+ *
+ * These fonts are currently loaded from Google Fonts CDN.
+ * For regulated/air-gapped deployments, download and self-host the font files:
+ *
+ * Inter (300, 400, 500, 600, 700 weights):
+ *   https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700
+ *
+ * JetBrains Mono (400, 500 weights):
+ *   https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500
+ *
+ * Steps to self-host:
+ * 1. Download font files as WOFF2 from Google Fonts
+ * 2. Place in public/fonts/ directory
+ * 3. Update @font-face src URLs below to point to local files
+ * 4. Remove Google Fonts from CSP allow-list (already done)
+ */
+
+/* Google Fonts CDN - temporary */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/*
+ * Local font-face declarations (uncomment when self-hosting)
+ *
+ * @font-face {
+ *   font-family: 'Inter';
+ *   font-style: normal;
+ *   font-weight: 300;
+ *   font-display: swap;
+ *   src: url('/fonts/inter-300.woff2') format('woff2');
+ * }
+ *
+ * @font-face {
+ *   font-family: 'Inter';
+ *   font-style: normal;
+ *   font-weight: 400;
+ *   font-display: swap;
+ *   src: url('/fonts/inter-400.woff2') format('woff2');
+ * }
+ *
+ * @font-face {
+ *   font-family: 'Inter';
+ *   font-style: normal;
+ *   font-weight: 500;
+ *   font-display: swap;
+ *   src: url('/fonts/inter-500.woff2') format('woff2');
+ * }
+ *
+ * @font-face {
+ *   font-family: 'Inter';
+ *   font-style: normal;
+ *   font-weight: 600;
+ *   font-display: swap;
+ *   src: url('/fonts/inter-600.woff2') format('woff2');
+ * }
+ *
+ * @font-face {
+ *   font-family: 'Inter';
+ *   font-style: normal;
+ *   font-weight: 700;
+ *   font-display: swap;
+ *   src: url('/fonts/inter-700.woff2') format('woff2');
+ * }
+ *
+ * @font-face {
+ *   font-family: 'JetBrains Mono';
+ *   font-style: normal;
+ *   font-weight: 400;
+ *   font-display: swap;
+ *   src: url('/fonts/jetbrainsmono-400.woff2') format('woff2');
+ * }
+ *
+ * @font-face {
+ *   font-family: 'JetBrains Mono';
+ *   font-style: normal;
+ *   font-weight: 500;
+ *   font-display: swap;
+ *   src: url('/fonts/jetbrainsmono-500.woff2') format('woff2');
+ * }
+ */

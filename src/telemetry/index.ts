@@ -1,4 +1,5 @@
 import { getConfig } from '../config';
+import { scrubObject, tagEnvironment } from './privacy'; // CISO-007
 
 export interface TelemetryEvent {
   name: string;
@@ -95,7 +96,9 @@ class TelemetryClient {
   trackEvent(name: string, properties: Record<string, unknown> = {}): void {
     if (!getConfig().features.enableTelemetry) return;
     const mergedProperties = { ...getTelemetryContext(), ...properties, requestId: getRequestId() };
-    const event = { name, properties: mergedProperties, timestamp: new Date() };
+    // CISO-007: Scrub PII/secrets and tag environment before emission
+    const scrubbedProperties = scrubObject(mergedProperties);
+    const event = tagEnvironment({ name, properties: scrubbedProperties, timestamp: new Date() });
     for (const sink of this.sinks) {
       try {
         sink.trackEvent(event);

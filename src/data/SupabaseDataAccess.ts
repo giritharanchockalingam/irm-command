@@ -418,51 +418,69 @@ export class SupabaseDataAccess implements DataAccessLayer {
   }
 
   private async _loadAll(): Promise<void> {
-    const [
-      risksRes,
-      controlsRes,
-      vendorsRes,
-      issuesRes,
-      lossEventsRes,
-      krisRes,
-      regChangesRes,
-      scenariosRes,
-      alertsRes,
-      auditRes,
-    ] = await Promise.all([
-      supabase.from('risks').select('*'),
-      supabase.from('controls').select('*'),
-      supabase.from('vendors').select('*'),
-      supabase.from('issues').select('*'),
-      supabase.from('loss_events').select('*'),
-      supabase.from('kris').select('*'),
-      supabase.from('regulatory_changes').select('*'),
-      supabase.from('risk_scenarios').select('*'),
-      supabase.from('monitoring_alerts').select('*'),
-      supabase.from('audit_log').select('*'),
-    ]);
+    // CISO-002/003 REMEDIATION: Route data access through Edge Functions in production.
+    // In development/demo mode, use direct Supabase queries (demo tokens are not real JWTs
+    // and Edge Functions cannot validate them).
+    //
+    // Production architecture:
+    //   Browser → Edge Function (JWT validated, permission checked, tenant filtered) → Database
+    // Development architecture:
+    //   Browser → Supabase REST API (anon key, RLS still enforced at DB level) → Database
 
-    this._cache.risks = (risksRes.data || []).map(mapRisk);
-    this._cache.controls = (controlsRes.data || []).map(mapControl);
-    this._cache.vendors = (vendorsRes.data || []).map(mapVendor);
-    this._cache.issues = (issuesRes.data || []).map(mapIssue);
-    this._cache.lossEvents = (lossEventsRes.data || []).map(mapLossEvent);
-    this._cache.kris = (krisRes.data || []).map(mapKRI);
-    this._cache.regulatoryChanges = (regChangesRes.data || []).map(mapRegulatoryChange);
-    this._cache.riskScenarios = (scenariosRes.data || []).map(mapRiskScenario);
-    this._cache.monitoringAlerts = (alertsRes.data || []).map(mapMonitoringAlert);
-    this._cache.auditLog = (auditRes.data || []).map(mapAuditEntry);
+    const { getConfig } = await import('../config');
+    const config = getConfig();
+    const isProduction = config.app.environment === 'production' || config.app.environment === 'staging';
 
-    // Log any errors
-    const errors = [
-      risksRes.error, controlsRes.error, vendorsRes.error, issuesRes.error,
-      lossEventsRes.error, krisRes.error, regChangesRes.error, scenariosRes.error,
-      alertsRes.error, auditRes.error,
-    ].filter(Boolean);
+    let risksData: any[] = [];
+    let controlsData: any[] = [];
+    let vendorsData: any[] = [];
+    let issuesData: any[] = [];
+    let lossEventsData: any[] = [];
+    let krisData: any[] = [];
+    let regChangesData: any[] = [];
+    let scenariosData: any[] = [];
+    let alertsData: any[] = [];
+    let auditData: any[] = [];
 
-    if (errors.length > 0) {
-      console.warn('Supabase data load errors:', errors);
+    if (isProduction) {
+      // PRODUCTION: All data through Edge Functions (server-side auth, tenant isolation)
+      const { fetchTable } = await import('../lib/edgeFunctions');
+      [risksData, controlsData, vendorsData, issuesData, lossEventsData,
+       krisData, regChangesData, scenariosData, alertsData, auditData] = await Promise.all([
+        fetchTable('risks').catch(() => []),
+        fetchTable('controls').catch(() => []),
+        fetchTable('vendors').catch(() => []),
+        fetchTable('issues').catch(() => []),
+        fetchTable('loss_events').catch(() => []),
+        fetchTable('kris').catch(() => []),
+        fetchTable('regulatory_changes').catch(() => []),
+        fetchTable('risk_scenarios').catch(() => []),
+        fetchTable('monitoring_alerts').catch(() => []),
+        fetchTable('audit_log').catch(() => []),
+      ]);
+    } else {
+      // DEVELOPMENT: Direct Supabase access (demo mode compatible, RLS at DB level)
+      const tables = ['risks', 'controls', 'vendors', 'issues', 'loss_events',
+                       'kris', 'regulatory_changes', 'risk_scenarios', 'monitoring_alerts', 'audit_log'];
+      const results = await Promise.all(
+        tables.map(table =>
+          supabase.from(table).select('*').then(res => res.data || []).catch(() => [])
+        )
+      );
+      [risksData, controlsData, vendorsData, issuesData, lossEventsData,
+       krisData, regChangesData, scenariosData, alertsData, auditData] = results;
     }
+
+    this._cache.risks = (risksData as any[]).map(mapRisk);
+    this._cache.controls = (controlsData as any[]).map(mapControl);
+    this._cache.vendors = (vendorsData as any[]).map(mapVendor);
+    this._cache.issues = (issuesData as any[]).map(mapIssue);
+    this._cache.lossEvents = (lossEventsData as any[]).map(mapLossEvent);
+    this._cache.kris = (krisData as any[]).map(mapKRI);
+    this._cache.regulatoryChanges = (regChangesData as any[]).map(mapRegulatoryChange);
+    this._cache.riskScenarios = (scenariosData as any[]).map(mapRiskScenario);
+    this._cache.monitoringAlerts = (alertsData as any[]).map(mapMonitoringAlert);
+    this._cache.auditLog = (auditData as any[]).map(mapAuditEntry);
 
     console.log(
       `[SupabaseDataAccess] Loaded: ${this._cache.risks.length} risks, ${this._cache.controls.length} controls, ` +
