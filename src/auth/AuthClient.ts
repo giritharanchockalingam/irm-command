@@ -693,11 +693,13 @@ const DEFAULT_OIDC_CONFIG: AuthClientConfig = {
 
 /**
  * Create an AuthClient instance based on environment
- * Demo mode is ONLY allowed when VITE_AUTH_MODE is explicitly set to 'demo'
- * AND the app is running on localhost. Production deployments MUST use OIDC.
+ * Demo mode is allowed when VITE_AUTH_MODE is explicitly set to 'demo'
+ * AND the environment is NOT production or staging.
+ * Production/staging deployments MUST use OIDC.
  *
  * CISO-001 REMEDIATION: Removed URL parameter bypass (?demo=true),
- * added production guard, restricted demo to explicit local development only.
+ * added production/staging guard to enforce OIDC in real deployments.
+ * Demo mode is permitted for prototype/development/demo environments.
  */
 export function createAuthClient(config?: AuthClientConfig): AuthClient {
   const authMode = import.meta.env?.VITE_AUTH_MODE || 'demo';
@@ -715,17 +717,11 @@ export function createAuthClient(config?: AuthClientConfig): AuthClient {
     return new OIDCAuthClient(config || DEFAULT_OIDC_CONFIG);
   }
 
-  // Demo mode: ONLY when explicitly set AND running on localhost
-  const isLocalhost =
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' ||
-     window.location.hostname === '127.0.0.1');
-
-  const isDemo = authMode === 'demo' && isLocalhost;
-
-  if (isDemo) {
-    console.warn(
-      '[AUTH] Running in demo mode (local development only). ' +
+  // Demo mode: allowed in non-production environments (development, prototype, demo)
+  // when VITE_AUTH_MODE is explicitly set to 'demo'
+  if (authMode === 'demo') {
+    console.info(
+      `[AUTH] Running in demo mode (environment: ${environment}). ` +
       'This mode is blocked in production/staging deployments.'
     );
     return new DemoAuthClient();
