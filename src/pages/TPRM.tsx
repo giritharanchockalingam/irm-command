@@ -47,12 +47,6 @@ export default function TPRMPage() {
   const { vendorId } = useParams();
   const navigate = useNavigate();
 
-  const dal = getDataAccess();
-  const vendors = dal.getVendors();
-  const controls = dal.getControls();
-  const monitoringAlerts = dal.getMonitoringAlerts();
-  const risks = dal.getRisks();
-
   if (vendorId) {
     return <VendorDetailView vendorId={vendorId} />;
   }
@@ -67,6 +61,10 @@ function VendorRegisterView() {
   const [filters, setFilters] = useState<FilterConfig>({ tier: '', criticality: '', slaStatus: '' });
   const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set());
   const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set());
+
+  const dal = getDataAccess();
+  const vendors = dal.getVendors();
+  const monitoringAlerts = dal.getMonitoringAlerts();
 
   // Stats calculations
   const totalVendors = vendors.length;
@@ -496,6 +494,11 @@ function VendorDetailView({ vendorId }: { vendorId: string }) {
   const [questionnaire, setQuestionnaire] = useState('');
   const [examNarrative, setExamNarrative] = useState('');
   const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set());
+
+  const dal = getDataAccess();
+  const vendors = dal.getVendors();
+  const controls = dal.getControls();
+  const monitoringAlerts = dal.getMonitoringAlerts();
 
   const vendor = vendors.find((v) => v.id === vendorId);
   const vendorControls = vendor ? controls.filter((c) => vendor.controlIds.includes(c.id)) : [];
