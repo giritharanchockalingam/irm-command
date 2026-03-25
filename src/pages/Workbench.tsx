@@ -330,28 +330,23 @@ export default function Workbench() {
   }, [calculateScores]);
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-navy-950 text-gray-100' : 'bg-gray-50 text-slate-900'} p-6`}>
-      {/* Page Header with clear explanation */}
-      <div className="mb-6">
-        <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'} mb-2`}>Risk Scoring Studio</h1>
-        <p className="text-cyan-400 text-base font-medium mb-3">
-          AI-powered scenario assessment and resilience analysis for G-SIB risk management
-        </p>
-        <div className={`${isDark ? 'bg-navy-900 border-slate-700 text-slate-200' : 'bg-gray-100 border-gray-300 text-slate-700'} border rounded-lg p-4 text-sm leading-relaxed`}>
-          <span className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>How it works:</span>{' '}
-          Configure a risk scenario on the left panel by selecting a business line, product, geography,
-          and risk type. Adjust the inherent risk and control strength sliders, then click{' '}
-          <span className="text-cyan-400 font-semibold">"Run Assessment"</span>{' '}
-          at the bottom of the form to generate a composite risk score, factor decomposition,
-          and AI-generated narrative. You can also load a pre-built scenario to get started quickly.
+    <div className={`${isDark ? 'bg-navy-950 text-gray-100' : 'bg-gray-50 text-slate-900'} px-6 pt-4`}>
+      {/* Page Header — compact to maximize working space */}
+      <div className="mb-3">
+        <div className="flex items-baseline justify-between">
+          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Risk Scoring Studio</h1>
+          <span className="text-cyan-400 text-xs font-medium">
+            Configure scenario → Run Assessment → View results
+          </span>
         </div>
       </div>
 
-      <div className="flex gap-6 h-[calc(100vh-280px)]">
+      {/* Main content — fixed height = viewport minus all chrome (dev banner 32px + layout header 64px + page header ~52px + padding 48px + status bar 32px) */}
+      <div className="flex gap-6" style={{ height: 'calc(100vh - 228px)' }}>
         {/* LEFT PANEL: Scenario Builder */}
         <div className="w-2/5 flex flex-col">
           {/* Scrollable form area */}
-          <div className="flex-1 overflow-y-auto space-y-6 pb-2 min-h-0">
+          <div className="flex-1 overflow-y-auto space-y-4 pb-2 min-h-0">
           {/* Scenario Form */}
           <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-6`}>
             <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'} mb-4 flex items-center gap-2`}>
