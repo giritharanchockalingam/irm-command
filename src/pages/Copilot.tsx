@@ -18,6 +18,7 @@ import { StreamingText } from '../components/ui/StreamingText';
 import { useAppStore } from '../store/appStore';
 import { useThemeStore } from '../store/themeStore';
 import { useIndustryStore } from '../store/industryStore';
+import { useClientStore } from '../store/clientStore';
 import { useSecurity, RequirePermission } from '../security/SecurityContext';
 
 interface Message {
@@ -144,6 +145,7 @@ const Copilot: React.FC = () => {
   const { can: canPerform } = useSecurity();
   const { isDark } = useThemeStore();
   const industryId = useIndustryStore((s) => s.industryId);
+  const activeClientId = useClientStore((s) => s.activeClientId);
   const currentModule = useAppStore((s) => s.currentModule);
   const selectedEntityId = useAppStore((s) => s.selectedEntityId);
   const selectedEntityType = useAppStore((s) => s.selectedEntityType);

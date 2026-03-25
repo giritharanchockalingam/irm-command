@@ -13,6 +13,7 @@ import {
 import * as seedData from '../domain/seedData';
 import { getIndustrySeedData, clearIndustrySeedCache, type IndustrySeedBundle } from '../domain/industrySeedData';
 import { useIndustryStore } from '../store/industryStore';
+import { useClientStore } from '../store/clientStore';
 import { getConfig } from '../config';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { SupabaseDataAccess } from './SupabaseDataAccess';
@@ -223,12 +224,13 @@ class InMemoryDataAccess implements DataAccessLayer {
   }
 
   /**
-   * Get the current industry's seed data bundle.
-   * Reads the industry from the Zustand store (works outside React via getState()).
+   * Get the current industry + client seed data bundle.
+   * Reads from both Zustand stores (works outside React via getState()).
    */
   private getData(): IndustrySeedBundle {
     const industryId = useIndustryStore.getState().industryId;
-    return getIndustrySeedData(industryId);
+    const clientId = useClientStore.getState().activeClientId;
+    return getIndustrySeedData(industryId, clientId || undefined);
   }
 
   /**

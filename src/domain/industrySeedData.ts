@@ -27,11 +27,73 @@ export interface IndustrySeedBundle {
   riskScenarios: RiskScenario[];
 }
 
-// Cache to avoid regenerating on every call
-const cache: Partial<Record<IndustryId, IndustrySeedBundle>> = {};
+// Cache keyed by "industryId::clientId" for full client isolation
+const cache: Record<string, IndustrySeedBundle> = {};
 
-export function getIndustrySeedData(industryId: IndustryId): IndustrySeedBundle {
-  if (cache[industryId]) return cache[industryId]!;
+/**
+ * Simple seeded hash from a string — produces a number 0-1 for deterministic variation.
+ */
+function seededRandom(seed: string, index: number): number {
+  let h = 0;
+  const s = seed + ':' + index;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h % 1000) / 1000;
+}
+
+/**
+ * Applies client-specific variation to a seed bundle.
+ * Adjusts risk scores, KRI values, loss amounts, and entity owners
+ * so each client's data feels unique while keeping the same structure.
+ */
+function applyClientVariation(bundle: IndustrySeedBundle, clientId: string, clientName: string): IndustrySeedBundle {
+  if (!clientId) return bundle;
+
+  const vary = (base: number, idx: number, range: number) => {
+    const r = seededRandom(clientId, idx);
+    return Math.max(1, Math.round(base + (r - 0.5) * range));
+  };
+
+  const varyAmount = (base: number, idx: number) => {
+    const r = seededRandom(clientId, idx);
+    return Math.round(base * (0.5 + r));
+  };
+
+  return {
+    risks: bundle.risks.map((r, i) => ({
+      ...r,
+      inherentScore: Math.min(25, Math.max(1, vary(r.inherentScore, i, 6))),
+      residualScore: Math.min(25, Math.max(1, vary(r.residualScore, i + 100, 4))),
+      impact: Math.min(5, Math.max(1, vary(r.impact, i + 200, 2))) as 1 | 2 | 3 | 4 | 5,
+      likelihood: Math.min(5, Math.max(1, vary(r.likelihood, i + 300, 2))) as 1 | 2 | 3 | 4 | 5,
+    })),
+    controls: bundle.controls,
+    vendors: bundle.vendors,
+    issues: bundle.issues,
+    kris: bundle.kris.map((k, i) => ({
+      ...k,
+      currentValue: +(k.currentValue * (0.7 + seededRandom(clientId, i + 500) * 0.6)).toFixed(2),
+      threshold: k.threshold,
+    })),
+    lossEvents: bundle.lossEvents.map((e, i) => ({
+      ...e,
+      amount: varyAmount(e.amount, i + 600),
+    })),
+    regulatoryChanges: bundle.regulatoryChanges,
+    monitoringAlerts: bundle.monitoringAlerts,
+    auditLog: bundle.auditLog,
+    riskScenarios: bundle.riskScenarios.map((s, i) => ({
+      ...s,
+      compositeScore: +(s.compositeScore * (0.8 + seededRandom(clientId, i + 700) * 0.4)).toFixed(1),
+      potentialLoss: varyAmount(s.potentialLoss, i + 800),
+    })),
+  };
+}
+
+export function getIndustrySeedData(industryId: IndustryId, clientId?: string): IndustrySeedBundle {
+  const cacheKey = clientId ? `${industryId}::${clientId}` : industryId;
+  if (cache[cacheKey]) return cache[cacheKey]!
 
   let bundle: IndustrySeedBundle;
 
@@ -77,13 +139,18 @@ export function getIndustrySeedData(industryId: IndustryId): IndustrySeedBundle 
       };
   }
 
-  cache[industryId] = bundle;
+  // Apply client-specific variation if a clientId is provided
+  if (clientId) {
+    bundle = applyClientVariation(bundle, clientId, '');
+  }
+
+  cache[cacheKey] = bundle;
   return bundle;
 }
 
-/** Clear cache when industry changes */
+/** Clear cache when industry or client changes */
 export function clearIndustrySeedCache(): void {
-  Object.keys(cache).forEach(k => delete cache[k as IndustryId]);
+  Object.keys(cache).forEach(k => delete cache[k]);
 }
 
 

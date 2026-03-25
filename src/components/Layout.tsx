@@ -23,6 +23,7 @@ import { useThemeStore } from '../store/themeStore';
 import { useAppStore } from '../store/appStore';
 import { useAuth } from '../auth/AuthContext';
 import { useIndustryStore } from '../store/industryStore';
+import { useClientStore } from '../store/clientStore';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { getIndustryConfig } from '../config/industries';
 import { orchestrate } from '../ai/orchestrator';
@@ -183,6 +184,8 @@ function Layout() {
   const currentModule = useAppStore((state) => state.currentModule);
   const { user, logout } = useAuth();
   const { industryId, config: industryConfig } = useIndustryStore();
+  const activeClientId = useClientStore((s) => s.activeClientId);
+  const activeClient = useClientStore((s) => s.activeClient);
 
   const getBreadcrumbs = () => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -257,7 +260,7 @@ function Layout() {
     }
 
     return alerts;
-  }, [industryId]);
+  }, [industryId, activeClientId]);
   const notificationCount = notifications.length;
 
   return (
@@ -278,13 +281,20 @@ function Layout() {
           </Link>
         </div>
 
-        {/* Industry Vertical Badge */}
+        {/* Industry + Client Badge */}
         {sidebarExpanded && (
-          <div className={`mx-3 mt-2 mb-1 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 ${
-            isDark ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-cyan-50 text-cyan-700 border border-cyan-200'
+          <div className={`mx-3 mt-2 mb-1 px-3 py-2 rounded-md text-xs flex flex-col gap-1 ${
+            isDark ? 'bg-cyan-500/10 border border-cyan-500/20' : 'bg-cyan-50 border border-cyan-200'
           }`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-            {industryConfig?.shortName || 'Banking'} Vertical
+            <div className={`font-medium flex items-center gap-2 ${isDark ? 'text-cyan-400' : 'text-cyan-700'}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              {industryConfig?.shortName || 'Banking'} Vertical
+            </div>
+            {activeClient && (
+              <div className={`pl-3.5 truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                {activeClient.name}
+              </div>
+            )}
           </div>
         )}
 

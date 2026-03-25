@@ -13,6 +13,8 @@ import RiskNarrativeCard from '../components/RiskNarrativeCard';
 import { useSecurity } from '../security/SecurityContext';
 import { useThemeStore } from '../store/themeStore';
 import { useIndustryStore } from '../store/industryStore';
+import { useClientStore } from '../store/clientStore';
+import { type IndustryId } from '../config/industries';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { RiskScenario } from '../domain/types';
 import { TemplateEngine } from '../ai/local/templateEngine';
@@ -48,8 +50,6 @@ interface FactorContribution {
   value: number;
   contribution: number;
 }
-
-import { type IndustryId } from '../config/industries';
 
 // Industry-aware configuration — populated dynamically in the component
 const INDUSTRY_BUSINESS_LINES: Record<IndustryId, string[]> = {
@@ -191,6 +191,7 @@ export default function Workbench() {
   const { can: canPerform } = useSecurity();
   const isDark = useThemeStore((state) => state.isDark);
   const { industryId, config: industryConfig } = useIndustryStore();
+  const activeClientId = useClientStore((s) => s.activeClientId);
 
   const dal = getDataAccess();
   const riskScenarios = dal.getRiskScenarios();

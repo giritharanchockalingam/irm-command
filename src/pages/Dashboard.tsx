@@ -21,10 +21,12 @@ import { useAppStore } from '../store/appStore';
 import { useSecurity } from '../security/SecurityContext';
 import { useThemeStore } from '../store/themeStore';
 import { useIndustryStore } from '../store/industryStore';
+import { useClientStore } from '../store/clientStore';
 
 const Dashboard: React.FC = () => {
   // Subscribe to industry store — triggers re-render when industry changes
   const industryId = useIndustryStore((s) => s.industryId);
+  const activeClientId = useClientStore((s) => s.activeClientId);
   const [digestTab, setDigestTab] = useState<'risk' | 'examiner'>('risk');
   const [digestContent, setDigestContent] = useState<string>('');
   const [isGeneratingDigest, setIsGeneratingDigest] = useState(false);

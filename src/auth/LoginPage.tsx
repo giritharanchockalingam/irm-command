@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { useIndustryStore } from '../store/industryStore';
+import { useClientStore } from '../store/clientStore';
 import { getAllIndustries, type IndustryId } from '../config/industries';
 import {
   Shield,
@@ -73,6 +74,10 @@ const industryDescriptions: Record<string, string> = {
 export default function LoginPage() {
   const { login, loginAs, error: authError, isLoading } = useAuth();
   const { industryId, setIndustry } = useIndustryStore();
+  const { clients, activeClientId, setActiveClient, addClient } = useClientStore();
+  const industryClients = clients.filter(c => c.industryId === industryId);
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [newClientName, setNewClientName] = useState('');
   const [mode, setMode] = useState<'signin' | 'signup' | 'demo'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -230,6 +235,81 @@ export default function LoginPage() {
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Client Selector */}
+          <div className="mb-5">
+            <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">Client Engagement</p>
+            <div className="space-y-1.5">
+              {industryClients.map((client) => {
+                const isActive = activeClientId === client.id;
+                return (
+                  <button
+                    key={client.id}
+                    onClick={() => setActiveClient(client.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+                      isActive
+                        ? 'bg-cyan-600/20 border-cyan-500 text-white border'
+                        : 'bg-slate-800/40 border-slate-700/50 text-slate-300 border hover:border-slate-600'
+                    }`}
+                  >
+                    <div
+                      className="w-7 h-7 rounded-md flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                      style={{ backgroundColor: client.color }}
+                    >
+                      {client.shortName.charAt(0)}
+                    </div>
+                    <div className="text-left min-w-0">
+                      <div className="font-medium truncate">{client.name}</div>
+                      <div className={`text-xs ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>{client.shortName}</div>
+                    </div>
+                    {isActive && <ChevronRight size={14} className="ml-auto text-cyan-400" />}
+                  </button>
+                );
+              })}
+
+              {/* Add Client */}
+              {showAddClient ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newClientName}
+                    onChange={(e) => setNewClientName(e.target.value)}
+                    placeholder="New client name..."
+                    className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newClientName.trim()) {
+                        const id = addClient({
+                          name: newClientName.trim(),
+                          shortName: newClientName.trim().split(' ')[0],
+                          industryId,
+                          color: '#' + Math.floor(Math.random() * 0xAAAAAA + 0x555555).toString(16),
+                        });
+                        setActiveClient(id);
+                        setNewClientName('');
+                        setShowAddClient(false);
+                      }
+                      if (e.key === 'Escape') { setShowAddClient(false); setNewClientName(''); }
+                    }}
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => { setShowAddClient(false); setNewClientName(''); }}
+                    className="p-2 text-slate-500 hover:text-slate-300"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAddClient(true)}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-dashed border-slate-700 hover:border-slate-500 transition"
+                >
+                  <span className="text-lg leading-none">+</span>
+                  Add Client
+                </button>
+              )}
             </div>
           </div>
 

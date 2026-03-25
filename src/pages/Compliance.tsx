@@ -17,6 +17,7 @@ import { Control, Risk, RegulatoryChange, Issue, Framework } from '../domain/typ
 import { TemplateEngine } from '../ai/local/templateEngine';
 import { useThemeStore } from '../store/themeStore';
 import { useIndustryStore } from '../store/industryStore';
+import { useClientStore } from '../store/clientStore';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StreamingText } from '../components/ui/StreamingText';
@@ -29,7 +30,7 @@ type ComplianceTab = 'controls' | 'gaps' | 'regulatory';
 type FrameworkFilter = 'All' | Framework;
 type IssueSourceFilter = 'All' | 'Internal Audit' | 'External Audit' | 'Regulatory Exam' | 'Self-Identified' | 'TPRM Review';
 
-interface ExpandedControlDetail {
+interface ControlDetail {
   controlId: string;
   isOpen: boolean;
 }
@@ -76,6 +77,7 @@ export default function Compliance() {
   const { can: canPerform } = useSecurity();
   const isDark = useThemeStore((s) => s.isDark);
   const industryId = useIndustryStore((s) => s.industryId);
+  const activeClientId = useClientStore((s) => s.activeClientId);
   const [activeTab, setActiveTab] = useState<ComplianceTab>('controls');
   const [frameworkFilter, setFrameworkFilter] = useState<FrameworkFilter>('All');
   const [issueSourceFilter, setIssueSourceFilter] = useState<IssueSourceFilter>('All');
