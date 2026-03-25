@@ -11,6 +11,15 @@ import {
   ChevronDown,
   ChevronRight,
   Filter,
+  ExternalLink,
+  Cloud,
+  GitBranch,
+  Monitor,
+  MessageSquare,
+  BarChart3,
+  FileText,
+  Network,
+  Building2,
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 
@@ -29,10 +38,16 @@ interface PhaseData {
 
 type DiagramTab = 'business' | 'application' | 'data' | 'technology';
 
+type IntegrationStatus = 'connected' | 'available' | 'coming_soon' | 'placeholder';
+
 interface IntegrationItem {
   name: string;
-  status: 'active' | 'planned' | 'stub';
+  description: string;
+  status: IntegrationStatus;
+  tier: 'Free' | 'Freemium' | 'Paid' | 'Enterprise' | 'Built-in';
+  capabilities: string[];
   category: string;
+  url?: string;
 }
 
 // ============================================================================
@@ -386,35 +401,91 @@ function TechnologyDiagram({ isDark }: { isDark: boolean }) {
 // INTEGRATIONS CATALOG
 // ============================================================================
 
+const INTEGRATION_CATEGORIES = [
+  { id: 'all', label: 'All', icon: Layers },
+  { id: 'data-platform', label: 'Data Platform', icon: Database },
+  { id: 'ai-ml', label: 'AI / ML', icon: Brain },
+  { id: 'grc-frameworks', label: 'GRC Frameworks', icon: Shield },
+  { id: 'cloud-infra', label: 'Cloud & Infra', icon: Cloud },
+  { id: 'devops', label: 'DevOps & CI/CD', icon: GitBranch },
+  { id: 'monitoring', label: 'Monitoring', icon: Monitor },
+  { id: 'communication', label: 'Communication', icon: MessageSquare },
+  { id: 'security', label: 'Auth & Security', icon: Lock },
+  { id: 'erp-grc', label: 'ERP & GRC Platforms', icon: Building2 },
+  { id: 'analytics', label: 'Analytics & BI', icon: BarChart3 },
+  { id: 'regulatory', label: 'Regulatory Data', icon: FileText },
+];
+
 const INTEGRATIONS: IntegrationItem[] = [
-  { name: 'React 18', status: 'active', category: 'Frontend' },
-  { name: 'TypeScript', status: 'active', category: 'Frontend' },
-  { name: 'Vite', status: 'active', category: 'Frontend' },
-  { name: 'Tailwind CSS', status: 'active', category: 'Frontend' },
-  { name: 'Zustand', status: 'active', category: 'Frontend' },
-  { name: 'React Router v6', status: 'active', category: 'Frontend' },
-  { name: 'Lucide Icons', status: 'active', category: 'Frontend' },
-  { name: 'Claude (Anthropic)', status: 'stub', category: 'AI / LLM' },
-  { name: 'OpenAI GPT-4', status: 'stub', category: 'AI / LLM' },
-  { name: 'Groq (Mixtral)', status: 'stub', category: 'AI / LLM' },
-  { name: 'MCP Protocol', status: 'active', category: 'AI / LLM' },
-  { name: 'RAG Knowledge Service', status: 'active', category: 'AI / LLM' },
-  { name: 'Web Speech API', status: 'active', category: 'AI / LLM' },
-  { name: 'Vercel', status: 'planned', category: 'Infrastructure' },
-  { name: 'PostgreSQL', status: 'planned', category: 'Infrastructure' },
-  { name: 'pgvector', status: 'planned', category: 'Infrastructure' },
-  { name: 'Redis', status: 'planned', category: 'Infrastructure' },
-  { name: 'OIDC SSO (Okta)', status: 'stub', category: 'Auth & Security' },
-  { name: 'SAML (Entra ID)', status: 'stub', category: 'Auth & Security' },
-  { name: 'RBAC Engine', status: 'active', category: 'Auth & Security' },
-  { name: 'Audit Logger', status: 'active', category: 'Auth & Security' },
-  { name: 'SIEM Sink', status: 'active', category: 'Auth & Security' },
-  { name: 'SOC 2 Controls', status: 'active', category: 'Compliance' },
-  { name: 'Basel III', status: 'active', category: 'Compliance' },
-  { name: 'SOX', status: 'active', category: 'Compliance' },
-  { name: 'GDPR', status: 'active', category: 'Compliance' },
-  { name: 'NIST CSF', status: 'active', category: 'Compliance' },
-  { name: 'ISO 27001', status: 'active', category: 'Compliance' },
+  // Data Platform
+  { name: 'Supabase', description: 'Managed PostgreSQL with PostgREST API, RLS policies, and real-time subscriptions for IRM data', status: 'connected', tier: 'Freemium', capabilities: ['PostgreSQL', 'Real-time', 'RLS', 'Auth'], category: 'data-platform', url: 'https://supabase.com' },
+  { name: 'pgvector', description: 'Vector similarity search extension for RAG-based GRC knowledge retrieval and policy search', status: 'coming_soon', tier: 'Free', capabilities: ['Vector Search', 'Embeddings', 'Similarity', 'RAG'], category: 'data-platform' },
+  { name: 'Apache Kafka', description: 'Distributed event streaming for real-time risk events, control triggers, and compliance signals', status: 'coming_soon', tier: 'Enterprise', capabilities: ['Event Streaming', 'Pub/Sub', 'Replay', 'Partitioning'], category: 'data-platform' },
+  { name: 'Snowflake', description: 'Cloud data warehouse for historical risk analytics, loss event modeling, and regulatory reporting', status: 'placeholder', tier: 'Enterprise', capabilities: ['Data Warehouse', 'Time Travel', 'Data Sharing', 'ML Features'], category: 'data-platform' },
+  { name: 'Redis', description: 'In-memory caching for API rate limiting, session state, and real-time risk score caching', status: 'coming_soon', tier: 'Freemium', capabilities: ['Caching', 'Pub/Sub', 'Rate Limiting', 'Sessions'], category: 'data-platform' },
+
+  // AI / ML
+  { name: 'Anthropic Claude', description: 'Primary LLM for complex risk analysis, control gap assessment, and multi-step GRC reasoning', status: 'connected', tier: 'Freemium', capabilities: ['Complex Reasoning', 'Tool Use', 'Long Context', 'Code Gen'], category: 'ai-ml', url: 'https://anthropic.com' },
+  { name: 'OpenAI GPT-4', description: 'Secondary LLM for medium-complexity queries, risk summaries, and structured data extraction', status: 'connected', tier: 'Freemium', capabilities: ['Chat', 'Function Calling', 'Vision', 'Embeddings'], category: 'ai-ml', url: 'https://openai.com' },
+  { name: 'Groq (Mixtral)', description: 'Ultra-fast inference for simple queries, real-time suggestions, and high-throughput KRI monitoring', status: 'connected', tier: 'Free', capabilities: ['Fast Inference', 'Low Latency', 'Streaming', 'OpenAI Compatible'], category: 'ai-ml', url: 'https://groq.com' },
+  { name: 'MCP Protocol', description: 'Model Context Protocol for tool-based GRC operations — risk queries, control lookups, vendor assessments', status: 'connected', tier: 'Built-in', capabilities: ['Tool Registry', 'Risk Queries', 'Control Lookup', 'KRI Search'], category: 'ai-ml' },
+  { name: 'RAG Knowledge Service', description: 'Client-side RAG engine indexing 20+ GRC policy, framework, and procedure documents with keyword matching', status: 'connected', tier: 'Built-in', capabilities: ['Policy Search', 'Framework Index', 'TF-IDF', 'Section Match'], category: 'ai-ml' },
+  { name: 'Google Gemini', description: 'Multimodal AI for document OCR, evidence screenshot analysis, and audit artifact processing', status: 'available', tier: 'Free', capabilities: ['Multimodal', 'Vision', 'Long Context', 'Document OCR'], category: 'ai-ml' },
+
+  // GRC Frameworks
+  { name: 'SOC 2 Type II', description: 'Trust Services Criteria mapping with 5 control domains — Security, Availability, Confidentiality, Processing Integrity, Privacy', status: 'connected', tier: 'Built-in', capabilities: ['CC6 Access', 'CC7 Change Mgmt', 'CC8 Encryption', 'A1 Availability'], category: 'grc-frameworks' },
+  { name: 'Basel III / IV', description: 'Capital adequacy, liquidity coverage (LCR), and net stable funding (NSFR) risk calculations', status: 'connected', tier: 'Built-in', capabilities: ['Capital Ratios', 'LCR', 'NSFR', 'Stress Testing'], category: 'grc-frameworks' },
+  { name: 'NIST CSF 2.0', description: 'Cybersecurity framework with Identify, Protect, Detect, Respond, Recover, and Govern functions', status: 'connected', tier: 'Built-in', capabilities: ['Identify', 'Protect', 'Detect', 'Govern'], category: 'grc-frameworks' },
+  { name: 'ISO 27001:2022', description: 'Information security management system with 93 controls across organizational, people, physical, and technology domains', status: 'connected', tier: 'Built-in', capabilities: ['93 Controls', 'Risk Assessment', 'SoA', 'Audit Trail'], category: 'grc-frameworks' },
+  { name: 'COSO ERM', description: 'Enterprise risk management framework — governance, strategy, performance, review, and information & communication', status: 'connected', tier: 'Built-in', capabilities: ['Risk Appetite', 'Strategy', 'Performance', 'Review'], category: 'grc-frameworks' },
+  { name: 'SOX Compliance', description: 'Sarbanes-Oxley Section 302/404 internal controls over financial reporting (ICFR)', status: 'connected', tier: 'Built-in', capabilities: ['ICFR', 'Section 302', 'Section 404', 'Material Weakness'], category: 'grc-frameworks' },
+  { name: 'GDPR', description: 'EU General Data Protection Regulation — data privacy impact assessments, consent management, breach notification', status: 'connected', tier: 'Built-in', capabilities: ['DPIA', 'Consent', 'Breach Notify', 'Data Rights'], category: 'grc-frameworks' },
+  { name: 'DORA', description: 'Digital Operational Resilience Act for EU financial entities — ICT risk management and incident reporting', status: 'available', tier: 'Built-in', capabilities: ['ICT Risk', 'Incident Report', 'Third Party', 'Resilience Test'], category: 'grc-frameworks' },
+
+  // Cloud & Infrastructure
+  { name: 'Vercel', description: 'Edge deployment platform with global CDN, instant rollbacks, and preview deployments for IRM Command', status: 'connected', tier: 'Freemium', capabilities: ['Edge CDN', 'Serverless', 'Preview Deploys', 'Analytics'], category: 'cloud-infra', url: 'https://vercel.com' },
+  { name: 'AWS', description: 'Amazon Web Services for S3 document storage, Lambda functions, and SQS message queuing', status: 'available', tier: 'Paid', capabilities: ['S3', 'Lambda', 'SQS', 'CloudWatch'], category: 'cloud-infra' },
+  { name: 'Azure', description: 'Microsoft Azure for enterprise-grade hosting, Active Directory SSO, and Azure AI services', status: 'placeholder', tier: 'Enterprise', capabilities: ['App Service', 'Entra ID', 'Azure AI', 'Key Vault'], category: 'cloud-infra' },
+
+  // DevOps
+  { name: 'GitHub', description: 'Source control, pull requests, GitHub Actions CI/CD, and issue tracking for IRM Command codebase', status: 'connected', tier: 'Free', capabilities: ['Git Repos', 'Pull Requests', 'Actions CI/CD', 'Issues'], category: 'devops', url: 'https://github.com' },
+  { name: 'Jenkins', description: 'Self-hosted CI/CD for enterprise build pipelines and multi-stage deployment of GRC platform', status: 'available', tier: 'Free', capabilities: ['Build Pipelines', 'Multi-Stage', 'Plugin Ecosystem', 'Distributed'], category: 'devops' },
+  { name: 'ArgoCD', description: 'GitOps continuous delivery for Kubernetes-based GRC microservices deployment', status: 'placeholder', tier: 'Free', capabilities: ['GitOps', 'K8s Deploy', 'Sync Policies', 'Rollbacks'], category: 'devops' },
+
+  // Monitoring
+  { name: 'Sentry', description: 'Error monitoring, performance tracking, and session replay for production GRC platform issues', status: 'connected', tier: 'Free', capabilities: ['Error Tracking', 'Performance', 'Session Replay', 'Release Health'], category: 'monitoring', url: 'https://sentry.io' },
+  { name: 'Datadog', description: 'Full-stack observability with APM, log management, and infrastructure monitoring for GRC SLAs', status: 'coming_soon', tier: 'Paid', capabilities: ['APM', 'Logs', 'Dashboards', 'Alerts'], category: 'monitoring' },
+  { name: 'Grafana + Prometheus', description: 'Open-source metrics visualization and alerting for risk processing SLAs and control test timelines', status: 'available', tier: 'Free', capabilities: ['Dashboards', 'Alerts', 'PromQL', 'Annotations'], category: 'monitoring' },
+  { name: 'PagerDuty', description: 'Incident management and on-call scheduling for critical risk breaches and compliance deadline alerts', status: 'placeholder', tier: 'Paid', capabilities: ['Incidents', 'On-Call', 'Escalation', 'Runbooks'], category: 'monitoring' },
+
+  // Communication
+  { name: 'Notification Engine', description: 'Built-in real-time notifications for risk breaches, KRI alerts, control failures, and compliance deadlines', status: 'connected', tier: 'Built-in', capabilities: ['Real-time', 'KRI Alerts', 'Risk Breach', 'Deadline Alerts'], category: 'communication' },
+  { name: 'Resend', description: 'Transactional email API for risk escalations, audit reminders, and compliance status reports', status: 'available', tier: 'Free', capabilities: ['Risk Escalations', 'Audit Reminders', 'HTML Templates', 'Webhooks'], category: 'communication', url: 'https://resend.com' },
+  { name: 'Slack', description: 'Team messaging with channels for risk ops, compliance alerts, and automated GRC notifications', status: 'available', tier: 'Freemium', capabilities: ['Channels', 'Webhooks', 'Bot Commands', 'Threads'], category: 'communication' },
+  { name: 'Microsoft Teams', description: 'Enterprise communication for board risk committee updates and cross-department GRC coordination', status: 'coming_soon', tier: 'Paid', capabilities: ['Channels', 'Chat', 'Meetings', 'Adaptive Cards'], category: 'communication' },
+
+  // Auth & Security
+  { name: 'Supabase Auth (RLS)', description: 'Row-level security with role-based access control for multi-tenant GRC operations', status: 'connected', tier: 'Built-in', capabilities: ['RLS Policies', 'JWT Auth', 'MFA', 'SSO'], category: 'security' },
+  { name: 'RBAC Engine', description: 'Fine-grained permission engine with role hierarchy — Admin, CRO, Auditor, Analyst, ReadOnly', status: 'connected', tier: 'Built-in', capabilities: ['Role Hierarchy', 'Permissions', 'Audit Trail', 'Delegation'], category: 'security' },
+  { name: 'OIDC SSO (Okta)', description: 'OpenID Connect single sign-on for enterprise identity federation and centralized access control', status: 'available', tier: 'Enterprise', capabilities: ['SSO', 'MFA', 'User Provisioning', 'Session Mgmt'], category: 'security' },
+  { name: 'SAML (Entra ID)', description: 'Microsoft Entra ID SAML integration for Azure AD-based enterprise authentication', status: 'available', tier: 'Enterprise', capabilities: ['SAML 2.0', 'Conditional Access', 'Group Sync', 'MFA'], category: 'security' },
+  { name: 'Vault (HashiCorp)', description: 'Secrets management for API keys, DB credentials, encryption keys, and certificate lifecycle', status: 'placeholder', tier: 'Enterprise', capabilities: ['Secret Storage', 'Dynamic Secrets', 'PKI', 'Encryption'], category: 'security' },
+
+  // ERP & GRC Platforms
+  { name: 'SAP GRC', description: 'SAP Governance, Risk and Compliance for access control, process control, and risk management integration', status: 'placeholder', tier: 'Enterprise', capabilities: ['Access Control', 'Process Control', 'Risk Mgmt', 'Audit Mgmt'], category: 'erp-grc' },
+  { name: 'ServiceNow GRC', description: 'IT GRC module for policy management, risk assessment, and continuous monitoring workflows', status: 'placeholder', tier: 'Enterprise', capabilities: ['Policy Mgmt', 'Risk Assessment', 'Continuous Monitor', 'Vendor Risk'], category: 'erp-grc' },
+  { name: 'Archer (RSA)', description: 'Enterprise GRC platform for integrated risk management, compliance, and audit automation', status: 'placeholder', tier: 'Enterprise', capabilities: ['Risk Register', 'Compliance Mgmt', 'Audit Workflow', 'Reporting'], category: 'erp-grc' },
+  { name: 'OneTrust', description: 'Privacy, security, and third-party risk management platform with regulatory intelligence', status: 'placeholder', tier: 'Enterprise', capabilities: ['Privacy Mgmt', 'Vendor Risk', 'Cookie Consent', 'Data Mapping'], category: 'erp-grc' },
+
+  // Analytics & BI
+  { name: 'Recharts (Built-in)', description: 'React charting library for real-time risk dashboards, KRI trend charts, and control test visualizations', status: 'connected', tier: 'Built-in', capabilities: ['Bar Charts', 'Line Charts', 'Area Charts', 'Composable'], category: 'analytics' },
+  { name: 'Power BI', description: 'Microsoft BI for executive risk dashboards, board reporting, and cross-entity risk aggregation', status: 'available', tier: 'Paid', capabilities: ['Dashboards', 'DAX Measures', 'Embedded Reports', 'Row-Level Security'], category: 'analytics' },
+  { name: 'Tableau', description: 'Advanced analytics and data visualization for loss event trends and risk appetite monitoring', status: 'placeholder', tier: 'Enterprise', capabilities: ['Visualizations', 'Data Prep', 'Predictions', 'Embedded'], category: 'analytics' },
+
+  // Regulatory Data
+  { name: 'Thomson Reuters', description: 'Regulatory intelligence feed for real-time regulatory change tracking across 200+ jurisdictions', status: 'placeholder', tier: 'Enterprise', capabilities: ['Reg Change Feed', 'Jurisdiction Map', 'Impact Analysis', 'Obligation Mgmt'], category: 'regulatory' },
+  { name: 'Wolters Kluwer', description: 'Compliance solutions for financial risk, regulatory reporting, and audit management', status: 'placeholder', tier: 'Enterprise', capabilities: ['Reg Reporting', 'Capital Calc', 'Stress Test', 'Compliance'], category: 'regulatory' },
+  { name: 'GLEIF (LEI)', description: 'Global Legal Entity Identifier Foundation for counterparty identification and vendor verification', status: 'available', tier: 'Free', capabilities: ['LEI Lookup', 'Entity Verify', 'Ownership Chain', 'API Access'], category: 'regulatory', url: 'https://www.gleif.org' },
 ];
 
 // ============================================================================
@@ -426,6 +497,13 @@ const Architecture: React.FC = () => {
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set(['preliminary']));
   const [activeDiagram, setActiveDiagram] = useState<DiagramTab>('business');
   const [integrationFilter, setIntegrationFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | IntegrationStatus>('all');
+
+  const totalIntegrations = INTEGRATIONS.length;
+  const connectedCount = INTEGRATIONS.filter(i => i.status === 'connected').length;
+  const availableCount = INTEGRATIONS.filter(i => i.status === 'available').length;
+  const comingSoonCount = INTEGRATIONS.filter(i => i.status === 'coming_soon').length;
+  const placeholderCount = totalIntegrations - connectedCount - availableCount - comingSoonCount;
 
   const togglePhase = (phaseId: string) => {
     const newSet = new Set(expandedPhases);
@@ -459,13 +537,15 @@ const Architecture: React.FC = () => {
     }
   };
 
-  const getIntegrationStatusColor = (status: string) => {
+  const getIntegrationStatusColor = (status: IntegrationStatus) => {
     switch (status) {
-      case 'active':
+      case 'connected':
         return isDark ? 'bg-green-900/40 text-green-300 border-green-700' : 'bg-green-50 text-green-700 border-green-200';
-      case 'stub':
+      case 'available':
+        return isDark ? 'bg-blue-900/40 text-blue-300 border-blue-700' : 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'coming_soon':
         return isDark ? 'bg-amber-900/40 text-amber-300 border-amber-700' : 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'planned':
+      case 'placeholder':
         return isDark ? 'bg-slate-700/40 text-slate-300 border-slate-600' : 'bg-slate-50 text-slate-600 border-slate-200';
       default:
         return '';
@@ -648,8 +728,40 @@ const Architecture: React.FC = () => {
     { key: 'technology', label: 'Technology Stack' },
   ];
 
-  const categories = ['all', ...new Set(INTEGRATIONS.map((i) => i.category))];
-  const filteredIntegrations = integrationFilter === 'all' ? INTEGRATIONS : INTEGRATIONS.filter((i) => i.category === integrationFilter);
+  const filteredIntegrations = INTEGRATIONS.filter(i => {
+    const catMatch = integrationFilter === 'all' || i.category === integrationFilter;
+    const statusMatch = statusFilter === 'all' || i.status === statusFilter;
+    return catMatch && statusMatch;
+  });
+
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'Free': return isDark ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700';
+      case 'Freemium': return isDark ? 'bg-cyan-900/50 text-cyan-300' : 'bg-cyan-100 text-cyan-700';
+      case 'Paid': return isDark ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700';
+      case 'Enterprise': return isDark ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-700';
+      case 'Built-in': return isDark ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700';
+      default: return '';
+    }
+  };
+
+  const getStatusLabel = (status: IntegrationStatus) => {
+    switch (status) {
+      case 'connected': return 'Connected';
+      case 'available': return 'Available';
+      case 'coming_soon': return 'Coming Soon';
+      case 'placeholder': return 'Planned';
+    }
+  };
+
+  const getStatusDot = (status: IntegrationStatus) => {
+    switch (status) {
+      case 'connected': return 'bg-green-500';
+      case 'available': return 'bg-blue-500';
+      case 'coming_soon': return 'bg-amber-500';
+      case 'placeholder': return 'bg-slate-500';
+    }
+  };
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
@@ -752,44 +864,143 @@ const Architecture: React.FC = () => {
 
         {/* ===================== INTEGRATION CATALOG ===================== */}
         <section>
-          <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-            Integration Catalog
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className={`text-2xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+                Integration Catalog
+              </h2>
+              <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                {totalIntegrations} integrations across {INTEGRATION_CATEGORIES.length - 1} categories
+              </p>
+            </div>
+            <div className="flex gap-3 text-xs">
+              {[
+                { label: 'Connected', count: connectedCount, color: 'bg-green-500' },
+                { label: 'Available', count: availableCount, color: 'bg-blue-500' },
+                { label: 'Coming Soon', count: comingSoonCount, color: 'bg-amber-500' },
+                { label: 'Planned', count: placeholderCount, color: 'bg-slate-500' },
+              ].map((s) => (
+                <div key={s.label} className="flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${s.color}`} />
+                  <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>{s.count} {s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Filter className={`w-4 h-4 mt-1.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
-            {categories.map((cat) => (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {INTEGRATION_CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
+              const count = cat.id === 'all' ? totalIntegrations : INTEGRATIONS.filter(i => i.category === cat.id).length;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setIntegrationFilter(cat.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1.5 ${
+                    integrationFilter === cat.id
+                      ? isDark
+                        ? 'bg-cyan-600 text-white border-cyan-500'
+                        : 'bg-cyan-600 text-white border-cyan-600'
+                      : isDark
+                      ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-slate-500'
+                      : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'
+                  }`}
+                >
+                  <Icon size={12} />
+                  {cat.label} ({count})
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex gap-2 mb-5">
+            {([
+              { id: 'all' as const, label: 'All Status', count: totalIntegrations },
+              { id: 'connected' as const, label: 'Connected', count: connectedCount },
+              { id: 'available' as const, label: 'Available', count: availableCount },
+              { id: 'coming_soon' as const, label: 'Coming Soon', count: comingSoonCount },
+              { id: 'placeholder' as const, label: 'Planned', count: placeholderCount },
+            ]).map((s) => (
               <button
-                key={cat}
-                onClick={() => setIntegrationFilter(cat)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                  integrationFilter === cat
+                key={s.id}
+                onClick={() => setStatusFilter(s.id)}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  statusFilter === s.id
                     ? isDark
-                      ? 'bg-blue-600 text-white border-blue-500'
-                      : 'bg-blue-600 text-white border-blue-600'
+                      ? 'bg-slate-600 text-white'
+                      : 'bg-slate-800 text-white'
                     : isDark
-                    ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-slate-500'
-                    : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'
+                    ? 'text-slate-400 hover:text-slate-200'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                {cat === 'all' ? 'All' : cat}
+                {s.label} ({s.count})
               </button>
             ))}
           </div>
 
-          {/* Integration Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {/* Integration Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredIntegrations.map((item, i) => (
               <div
                 key={i}
-                className={`px-3 py-2 rounded-lg border text-center text-sm ${getIntegrationStatusColor(item.status)}`}
+                className={`rounded-lg border p-4 transition-all hover:scale-[1.01] ${
+                  isDark ? 'bg-slate-800/80 border-slate-700 hover:border-slate-500' : 'bg-white border-slate-200 hover:border-slate-400'
+                } ${item.status === 'connected' ? (isDark ? 'border-l-green-500 border-l-2' : 'border-l-green-500 border-l-2') : ''}`}
               >
-                <p className="font-medium">{item.name}</p>
-                <p className="text-xs opacity-70">{item.status}</p>
+                {/* Header */}
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <h4 className={`font-semibold text-sm ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+                      {item.name}
+                    </h4>
+                    {item.url && (
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:text-cyan-400">
+                        <ExternalLink size={12} />
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getTierColor(item.tier)}`}>
+                      {item.tier}
+                    </span>
+                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium ${getIntegrationStatusColor(item.status)}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(item.status)}`} />
+                      {getStatusLabel(item.status)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className={`text-xs leading-relaxed mb-3 line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {item.description}
+                </p>
+
+                {/* Capabilities */}
+                <div className="flex flex-wrap gap-1">
+                  {item.capabilities.map((cap) => (
+                    <span
+                      key={cap}
+                      className={`px-2 py-0.5 rounded text-[10px] ${
+                        isDark ? 'bg-slate-700/80 text-slate-300' : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {cap}
+                    </span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
+
+          {filteredIntegrations.length === 0 && (
+            <div className={`text-center py-12 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              <Network size={32} className="mx-auto mb-2 opacity-50" />
+              <p>No integrations match the selected filters</p>
+            </div>
+          )}
         </section>
 
         {/* ===================== LEGEND ===================== */}
