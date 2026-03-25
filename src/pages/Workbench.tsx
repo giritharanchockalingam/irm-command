@@ -10,7 +10,7 @@ import {
   Zap,
 } from 'lucide-react';
 import RiskNarrativeCard from '../components/RiskNarrativeCard';
-import { useSecurity, RequirePermission } from '../security/SecurityContext';
+import { useSecurity } from '../security/SecurityContext';
 import { useThemeStore } from '../store/themeStore';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { RiskScenario } from '../domain/types';
@@ -562,15 +562,13 @@ export default function Workbench() {
 
           {/* Sticky Run Assessment Button — always visible at bottom of left panel */}
           <div className={`flex-shrink-0 pt-3 pb-1 border-t ${isDark ? 'border-slate-700 bg-navy-950' : 'border-gray-300 bg-gray-50'}`}>
-            <RequirePermission permission="workbench:execute">
-              <button
-                onClick={calculateScores}
-                className="w-full px-4 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base shadow-lg shadow-cyan-600/30 active:scale-[0.98]"
-              >
-                <TrendingUp className="w-5 h-5" />
-                Run Assessment
-              </button>
-            </RequirePermission>
+            <button
+              onClick={calculateScores}
+              className="w-full px-4 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base shadow-lg shadow-cyan-600/30 active:scale-[0.98]"
+            >
+              <TrendingUp className="w-5 h-5" />
+              Run Assessment
+            </button>
           </div>
         </div>
 
@@ -719,7 +717,7 @@ export default function Workbench() {
               </button>
             </>
           ) : (
-            <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-12 flex items-center justify-center h-96`}>
+            <Card className={`${isDark ? 'bg-navy-900 border-slate-700' : 'bg-white border-gray-200'} border p-12 flex items-center justify-center`}>
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-cyan-600/10 border-2 border-cyan-600/30 flex items-center justify-center">
                   <Zap className="w-10 h-10 text-cyan-400" />
@@ -730,15 +728,13 @@ export default function Workbench() {
                   product, geography, and risk type — then click the button below to generate
                   a composite risk score with AI-powered analysis.
                 </p>
-                <RequirePermission permission="workbench:execute">
-                  <button
-                    onClick={calculateScores}
-                    className="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 mx-auto text-base shadow-lg shadow-cyan-600/20"
-                  >
-                    <TrendingUp className="w-5 h-5" />
-                    Run Assessment
-                  </button>
-                </RequirePermission>
+                <button
+                  onClick={calculateScores}
+                  className="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 mx-auto text-base shadow-lg shadow-cyan-600/20"
+                >
+                  <TrendingUp className="w-5 h-5" />
+                  Run Assessment
+                </button>
               </div>
             </Card>
           )}
