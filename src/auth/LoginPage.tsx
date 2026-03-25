@@ -20,6 +20,7 @@ import {
   Heart,
   Cpu,
   Zap,
+  X,
 } from 'lucide-react';
 
 // ============ DEMO USERS ============
@@ -169,7 +170,9 @@ export default function LoginPage() {
           <div className="flex-1 flex flex-col justify-center -mt-4">
             <h2 className="text-lg font-semibold text-white mb-1">Enterprise GRC Platform</h2>
             <p className="text-sm text-slate-400 mb-6">
-              {industryDescriptions[industryId] || industryDescriptions.banking}
+              {mode === 'demo'
+                ? (industryDescriptions[industryId] || industryDescriptions.banking)
+                : 'AI-powered risk management platform for regulated industries — banking, healthcare, technology, energy, and manufacturing'}
             </p>
 
             <div className="space-y-4">
@@ -211,106 +214,6 @@ export default function LoginPage() {
               <h1 className="text-2xl font-bold text-white">IRM Sentinel</h1>
             </div>
             <p className="text-sm text-slate-400">Integrated Risk Management Platform</p>
-          </div>
-
-          {/* Industry Selector */}
-          <div className="mb-5">
-            <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">Industry Vertical</p>
-            <div className="grid grid-cols-5 gap-1.5">
-              {getAllIndustries().map((ind) => {
-                const Icon = industryIcons[ind.id as IndustryId];
-                const isSelected = industryId === ind.id;
-                return (
-                  <button
-                    key={ind.id}
-                    onClick={() => setIndustry(ind.id as IndustryId)}
-                    className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs transition-all ${
-                      isSelected
-                        ? 'bg-cyan-600/20 border-cyan-500 text-cyan-300 border'
-                        : 'bg-slate-800/40 border-slate-700/50 text-slate-400 border hover:border-slate-600 hover:text-slate-300'
-                    }`}
-                  >
-                    <Icon size={16} />
-                    <span className="font-medium truncate w-full text-center">{ind.shortName}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Client Selector */}
-          <div className="mb-5">
-            <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">Client Engagement</p>
-            <div className="space-y-1.5">
-              {industryClients.map((client) => {
-                const isActive = activeClientId === client.id;
-                return (
-                  <button
-                    key={client.id}
-                    onClick={() => setActiveClient(client.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                      isActive
-                        ? 'bg-cyan-600/20 border-cyan-500 text-white border'
-                        : 'bg-slate-800/40 border-slate-700/50 text-slate-300 border hover:border-slate-600'
-                    }`}
-                  >
-                    <div
-                      className="w-7 h-7 rounded-md flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                      style={{ backgroundColor: client.color }}
-                    >
-                      {client.shortName.charAt(0)}
-                    </div>
-                    <div className="text-left min-w-0">
-                      <div className="font-medium truncate">{client.name}</div>
-                      <div className={`text-xs ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>{client.shortName}</div>
-                    </div>
-                    {isActive && <ChevronRight size={14} className="ml-auto text-cyan-400" />}
-                  </button>
-                );
-              })}
-
-              {/* Add Client */}
-              {showAddClient ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newClientName}
-                    onChange={(e) => setNewClientName(e.target.value)}
-                    placeholder="New client name..."
-                    className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && newClientName.trim()) {
-                        const id = addClient({
-                          name: newClientName.trim(),
-                          shortName: newClientName.trim().split(' ')[0],
-                          industryId,
-                          color: '#' + Math.floor(Math.random() * 0xAAAAAA + 0x555555).toString(16),
-                        });
-                        setActiveClient(id);
-                        setNewClientName('');
-                        setShowAddClient(false);
-                      }
-                      if (e.key === 'Escape') { setShowAddClient(false); setNewClientName(''); }
-                    }}
-                    autoFocus
-                  />
-                  <button
-                    onClick={() => { setShowAddClient(false); setNewClientName(''); }}
-                    className="p-2 text-slate-500 hover:text-slate-300"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowAddClient(true)}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-dashed border-slate-700 hover:border-slate-500 transition"
-                >
-                  <span className="text-lg leading-none">+</span>
-                  Add Client
-                </button>
-              )}
-            </div>
           </div>
 
           {/* Auth Mode Tabs */}
@@ -493,12 +396,114 @@ export default function LoginPage() {
           {mode === 'demo' && (
             <>
               <div className="mb-5">
-                <h3 className="text-lg font-semibold text-white mb-1">Demo Credentials</h3>
+                <h3 className="text-lg font-semibold text-white mb-1">Demo Access</h3>
                 <p className="text-sm text-slate-400">
-                  Click any role below to instantly sign in and explore IRM Sentinel with that persona's permissions.
+                  Select an industry vertical and client, then pick a role to explore IRM Sentinel with that persona's permissions.
                 </p>
               </div>
 
+              {/* Industry Selector (Demo only) */}
+              <div className="mb-4">
+                <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">Industry Vertical</p>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {getAllIndustries().map((ind) => {
+                    const Icon = industryIcons[ind.id as IndustryId];
+                    const isSelected = industryId === ind.id;
+                    return (
+                      <button
+                        key={ind.id}
+                        onClick={() => setIndustry(ind.id as IndustryId)}
+                        className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs transition-all ${
+                          isSelected
+                            ? 'bg-cyan-600/20 border-cyan-500 text-cyan-300 border'
+                            : 'bg-slate-800/40 border-slate-700/50 text-slate-400 border hover:border-slate-600 hover:text-slate-300'
+                        }`}
+                      >
+                        <Icon size={16} />
+                        <span className="font-medium truncate w-full text-center">{ind.shortName}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Client Selector (Demo only) */}
+              <div className="mb-5">
+                <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">Client Engagement</p>
+                <div className="space-y-1.5">
+                  {industryClients.map((client) => {
+                    const isActive = activeClientId === client.id;
+                    return (
+                      <button
+                        key={client.id}
+                        onClick={() => setActiveClient(client.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+                          isActive
+                            ? 'bg-cyan-600/20 border-cyan-500 text-white border'
+                            : 'bg-slate-800/40 border-slate-700/50 text-slate-300 border hover:border-slate-600'
+                        }`}
+                      >
+                        <div
+                          className="w-7 h-7 rounded-md flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                          style={{ backgroundColor: client.color }}
+                        >
+                          {client.shortName.charAt(0)}
+                        </div>
+                        <div className="text-left min-w-0">
+                          <div className="font-medium truncate">{client.name}</div>
+                          <div className={`text-xs ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>{client.shortName}</div>
+                        </div>
+                        {isActive && <ChevronRight size={14} className="ml-auto text-cyan-400" />}
+                      </button>
+                    );
+                  })}
+
+                  {/* Add Client */}
+                  {showAddClient ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newClientName}
+                        onChange={(e) => setNewClientName(e.target.value)}
+                        placeholder="New client name..."
+                        className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newClientName.trim()) {
+                            const id = addClient({
+                              name: newClientName.trim(),
+                              shortName: newClientName.trim().split(' ')[0],
+                              industryId,
+                              color: '#' + Math.floor(Math.random() * 0xAAAAAA + 0x555555).toString(16),
+                            });
+                            setActiveClient(id);
+                            setNewClientName('');
+                            setShowAddClient(false);
+                          }
+                          if (e.key === 'Escape') { setShowAddClient(false); setNewClientName(''); }
+                        }}
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => { setShowAddClient(false); setNewClientName(''); }}
+                        className="p-2 text-slate-500 hover:text-slate-300"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowAddClient(true)}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-dashed border-slate-700 hover:border-slate-500 transition"
+                    >
+                      <span className="text-lg leading-none">+</span>
+                      Add Client
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Demo Role Selector */}
+              <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">Select Role</p>
               <div className="space-y-2.5">
                 {DEMO_USERS.map((demoUser) => (
                   <button
@@ -538,7 +543,7 @@ export default function LoginPage() {
 
           {/* Bottom footer */}
           <div className="mt-8 text-center text-[10px] text-slate-600">
-            IRM Sentinel v1.0.0 • Prototype • Built for G-SIB Banks
+            IRM Sentinel v1.0.0 • Prototype • Enterprise GRC Platform
           </div>
         </div>
       </div>
