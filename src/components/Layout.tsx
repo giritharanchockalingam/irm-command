@@ -22,7 +22,9 @@ import {
 import { useThemeStore } from '../store/themeStore';
 import { useAppStore } from '../store/appStore';
 import { useAuth } from '../auth/AuthContext';
+import { useIndustryStore } from '../store/industryStore';
 import { getDataAccess } from '../data/DataAccessLayer';
+import { getIndustryConfig } from '../config/industries';
 import { orchestrate } from '../ai/orchestrator';
 import { FormattedMessage } from './FormattedMessage';
 
@@ -180,6 +182,7 @@ function Layout() {
   const { copilotOpen, toggleCopilot } = useAppStore();
   const currentModule = useAppStore((state) => state.currentModule);
   const { user, logout } = useAuth();
+  const { industryId, config: industryConfig } = useIndustryStore();
 
   const getBreadcrumbs = () => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -274,6 +277,16 @@ function Layout() {
             {sidebarExpanded && <span className="font-bold text-sm">IRM Sentinel</span>}
           </Link>
         </div>
+
+        {/* Industry Vertical Badge */}
+        {sidebarExpanded && (
+          <div className={`mx-3 mt-2 mb-1 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 ${
+            isDark ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-cyan-50 text-cyan-700 border border-cyan-200'
+          }`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            {industryConfig?.label} Vertical
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto">

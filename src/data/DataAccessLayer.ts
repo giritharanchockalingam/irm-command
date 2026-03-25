@@ -11,6 +11,8 @@ import {
   AuditEntry,
 } from '../domain/types';
 import * as seedData from '../domain/seedData';
+import { getIndustrySeedData, clearIndustrySeedCache, type IndustrySeedBundle } from '../domain/industrySeedData';
+import { useIndustryStore } from '../store/industryStore';
 import { getConfig } from '../config';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { SupabaseDataAccess } from './SupabaseDataAccess';
@@ -221,6 +223,15 @@ class InMemoryDataAccess implements DataAccessLayer {
   }
 
   /**
+   * Get the current industry's seed data bundle.
+   * Reads the industry from the Zustand store (works outside React via getState()).
+   */
+  private getData(): IndustrySeedBundle {
+    const industryId = useIndustryStore.getState().industryId;
+    return getIndustrySeedData(industryId);
+  }
+
+  /**
    * Filter data by tenant ID if provided.
    * If items don't have a tenantId field (e.g. seed data), return all items unfiltered.
    */
@@ -229,7 +240,6 @@ class InMemoryDataAccess implements DataAccessLayer {
     tenantId?: string
   ): T[] {
     const id = tenantId || this.tenantId;
-    // If the first item doesn't have a tenantId property, skip filtering (seed data)
     if (items.length === 0 || !('tenantId' in (items[0] as Record<string, unknown>))) {
       return items;
     }
@@ -238,36 +248,36 @@ class InMemoryDataAccess implements DataAccessLayer {
 
   // ===== Risk Methods =====
   getRisks(tenantId?: string): Risk[] {
-    return this.filterByTenant(seedData.risks, tenantId);
+    return this.filterByTenant(this.getData().risks, tenantId);
   }
 
   getRiskById(id: string): Risk | undefined {
-    return seedData.risks.find((r) => r.id === id);
+    return this.getData().risks.find((r) => r.id === id);
   }
 
   getRisksByStatus(status: string, tenantId?: string): Risk[] {
-    return this.filterByTenant(seedData.risks, tenantId).filter(
+    return this.filterByTenant(this.getData().risks, tenantId).filter(
       (r) => r.status === status
     );
   }
 
   getRisksByCategory(category: string, tenantId?: string): Risk[] {
-    return this.filterByTenant(seedData.risks, tenantId).filter(
+    return this.filterByTenant(this.getData().risks, tenantId).filter(
       (r) => r.category === category
     );
   }
 
   // ===== Control Methods =====
   getControls(tenantId?: string): Control[] {
-    return this.filterByTenant(seedData.controls, tenantId);
+    return this.filterByTenant(this.getData().controls, tenantId);
   }
 
   getControlById(id: string): Control | undefined {
-    return seedData.controls.find((c) => c.id === id);
+    return this.getData().controls.find((c) => c.id === id);
   }
 
   getControlsByFramework(framework: string, tenantId?: string): Control[] {
-    return this.filterByTenant(seedData.controls, tenantId).filter(
+    return this.filterByTenant(this.getData().controls, tenantId).filter(
       (c) => c.framework === framework
     );
   }
@@ -276,151 +286,151 @@ class InMemoryDataAccess implements DataAccessLayer {
     effectiveness: string,
     tenantId?: string
   ): Control[] {
-    return this.filterByTenant(seedData.controls, tenantId).filter(
+    return this.filterByTenant(this.getData().controls, tenantId).filter(
       (c) => c.effectiveness === effectiveness
     );
   }
 
   getControlsByRisk(riskId: string, tenantId?: string): Control[] {
-    return this.filterByTenant(seedData.controls, tenantId).filter((c) =>
-      c.linkedRiskIds?.includes(riskId)
+    return this.filterByTenant(this.getData().controls, tenantId).filter((c) =>
+      (c as any).linkedRiskIds?.includes(riskId)
     );
   }
 
   // ===== Vendor Methods =====
   getVendors(tenantId?: string): Vendor[] {
-    return this.filterByTenant(seedData.vendors, tenantId);
+    return this.filterByTenant(this.getData().vendors, tenantId);
   }
 
   getVendorById(id: string): Vendor | undefined {
-    return seedData.vendors.find((v) => v.id === id);
+    return this.getData().vendors.find((v) => v.id === id);
   }
 
   getVendorsByRiskRating(rating: string, tenantId?: string): Vendor[] {
-    return this.filterByTenant(seedData.vendors, tenantId).filter(
-      (v) => v.riskRating === rating
+    return this.filterByTenant(this.getData().vendors, tenantId).filter(
+      (v) => (v as any).riskRating === rating
     );
   }
 
   getVendorsByCategory(category: string, tenantId?: string): Vendor[] {
-    return this.filterByTenant(seedData.vendors, tenantId).filter(
+    return this.filterByTenant(this.getData().vendors, tenantId).filter(
       (v) => v.category === category
     );
   }
 
   // ===== Issue Methods =====
   getIssues(tenantId?: string): Issue[] {
-    return this.filterByTenant(seedData.issues, tenantId);
+    return this.filterByTenant(this.getData().issues, tenantId);
   }
 
   getIssueById(id: string): Issue | undefined {
-    return seedData.issues.find((i) => i.id === id);
+    return this.getData().issues.find((i) => i.id === id);
   }
 
   getIssuesBySeverity(severity: string, tenantId?: string): Issue[] {
-    return this.filterByTenant(seedData.issues, tenantId).filter(
+    return this.filterByTenant(this.getData().issues, tenantId).filter(
       (i) => i.severity === severity
     );
   }
 
   getIssuesByStatus(status: string, tenantId?: string): Issue[] {
-    return this.filterByTenant(seedData.issues, tenantId).filter(
+    return this.filterByTenant(this.getData().issues, tenantId).filter(
       (i) => i.status === status
     );
   }
 
   // ===== Loss Event Methods =====
   getLossEvents(tenantId?: string): LossEvent[] {
-    return this.filterByTenant(seedData.lossEvents, tenantId);
+    return this.filterByTenant(this.getData().lossEvents, tenantId);
   }
 
   getLossEventsByType(type: string, tenantId?: string): LossEvent[] {
-    return this.filterByTenant(seedData.lossEvents, tenantId).filter(
-      (e) => e.type === type
+    return this.filterByTenant(this.getData().lossEvents, tenantId).filter(
+      (e) => (e as any).type === type
     );
   }
 
   // ===== KRI Methods =====
   getKRIs(tenantId?: string): KRI[] {
-    return this.filterByTenant(seedData.kris, tenantId);
+    return this.filterByTenant(this.getData().kris, tenantId);
   }
 
   getKRIsAboveThreshold(tenantId?: string): KRI[] {
-    return this.filterByTenant(seedData.kris, tenantId).filter(
+    return this.filterByTenant(this.getData().kris, tenantId).filter(
       (k) => k.currentValue > k.threshold
     );
   }
 
   // ===== Regulatory Change Methods =====
   getRegulatoryChanges(tenantId?: string): RegulatoryChange[] {
-    return this.filterByTenant(seedData.regulatoryChanges, tenantId);
+    return this.filterByTenant(this.getData().regulatoryChanges, tenantId);
   }
 
   getRegulatoryChangesByStatus(
     status: string,
     tenantId?: string
   ): RegulatoryChange[] {
-    return this.filterByTenant(seedData.regulatoryChanges, tenantId).filter(
+    return this.filterByTenant(this.getData().regulatoryChanges, tenantId).filter(
       (r) => r.status === status
     );
   }
 
   // ===== Risk Scenario Methods =====
   getRiskScenarios(tenantId?: string): RiskScenario[] {
-    return this.filterByTenant(seedData.riskScenarios, tenantId);
+    return this.filterByTenant(this.getData().riskScenarios, tenantId);
   }
 
   getRiskScenariosByImpact(impact: string, tenantId?: string): RiskScenario[] {
-    return this.filterByTenant(seedData.riskScenarios, tenantId).filter(
+    return this.filterByTenant(this.getData().riskScenarios, tenantId).filter(
       (s) => s.impactLevel === impact
     );
   }
 
   // ===== Monitoring Alert Methods =====
   getMonitoringAlerts(tenantId?: string): MonitoringAlert[] {
-    return this.filterByTenant(seedData.monitoringAlerts, tenantId);
+    return this.filterByTenant(this.getData().monitoringAlerts, tenantId);
   }
 
   getAlertsByVendor(
     vendorId: string,
     tenantId?: string
   ): MonitoringAlert[] {
-    return this.filterByTenant(seedData.monitoringAlerts, tenantId).filter(
+    return this.filterByTenant(this.getData().monitoringAlerts, tenantId).filter(
       (a) => a.vendorId === vendorId
     );
   }
 
   getAlertsBySeverity(severity: string, tenantId?: string): MonitoringAlert[] {
-    return this.filterByTenant(seedData.monitoringAlerts, tenantId).filter(
+    return this.filterByTenant(this.getData().monitoringAlerts, tenantId).filter(
       (a) => a.severity === severity
     );
   }
 
   getActiveAlerts(tenantId?: string): MonitoringAlert[] {
-    return this.filterByTenant(seedData.monitoringAlerts, tenantId).filter(
-      (a) => a.resolved === false
+    return this.filterByTenant(this.getData().monitoringAlerts, tenantId).filter(
+      (a) => (a as any).resolved === false
     );
   }
 
   // ===== Audit Log Methods =====
   getAuditLog(tenantId?: string): AuditEntry[] {
-    return this.filterByTenant(seedData.auditLog, tenantId);
+    return this.filterByTenant(this.getData().auditLog, tenantId);
   }
 
   getAuditLogByUser(userId: string, tenantId?: string): AuditEntry[] {
-    return this.filterByTenant(seedData.auditLog, tenantId).filter(
-      (e) => e.userId === userId
+    return this.filterByTenant(this.getData().auditLog, tenantId).filter(
+      (e) => (e as any).userId === userId
     );
   }
 
   getAuditLogByResource(resourceId: string, tenantId?: string): AuditEntry[] {
-    return this.filterByTenant(seedData.auditLog, tenantId).filter(
-      (e) => e.resourceId === resourceId
+    return this.filterByTenant(this.getData().auditLog, tenantId).filter(
+      (e) => (e as any).resourceId === resourceId
     );
   }
 
   getAuditLogByAction(action: string, tenantId?: string): AuditEntry[] {
-    return this.filterByTenant(seedData.auditLog, tenantId).filter(
+    return this.filterByTenant(this.getData().auditLog, tenantId).filter(
       (e) => e.action === action
     );
   }
@@ -495,6 +505,7 @@ export function resetDataAccess(): void {
   if (getConfig().app.environment !== 'production') {
     instance = null;
     supabaseInstance = null;
+    clearIndustrySeedCache();
   } else {
     console.warn('Cannot reset DataAccess in production');
   }

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
+import { useIndustryStore } from '../store/industryStore';
+import { getAllIndustries, type IndustryId } from '../config/industries';
 import {
   Shield,
   BarChart3,
@@ -12,6 +14,11 @@ import {
   Mail,
   User,
   ChevronRight,
+  Building2,
+  Factory,
+  Heart,
+  Cpu,
+  Zap,
 } from 'lucide-react';
 
 // ============ DEMO USERS ============
@@ -46,8 +53,26 @@ const PLATFORM_FEATURES = [
 
 // ============ COMPONENT ============
 
+// ============ INDUSTRY ICONS ============
+const industryIcons: Record<string, any> = {
+  banking: Building2,
+  healthcare: Heart,
+  technology: Cpu,
+  energy: Zap,
+  manufacturing: Factory,
+};
+
+const industryDescriptions: Record<string, string> = {
+  banking: 'AI-powered risk management for G-SIB banks and regulated financial institutions',
+  healthcare: 'AI-powered risk management for healthcare systems and clinical organizations',
+  technology: 'AI-powered risk management for technology companies and digital platforms',
+  energy: 'AI-powered risk management for energy utilities and pipeline operators',
+  manufacturing: 'AI-powered risk management for manufacturing enterprises and supply chains',
+};
+
 export default function LoginPage() {
   const { login, loginAs, error: authError, isLoading } = useAuth();
+  const { industryId, setIndustry } = useIndustryStore();
   const [mode, setMode] = useState<'signin' | 'signup' | 'demo'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -139,7 +164,7 @@ export default function LoginPage() {
           <div className="flex-1 flex flex-col justify-center -mt-4">
             <h2 className="text-lg font-semibold text-white mb-1">Enterprise GRC Platform</h2>
             <p className="text-sm text-slate-400 mb-6">
-              AI-powered risk management for G-SIB banks and regulated financial institutions
+              {industryDescriptions[industryId] || industryDescriptions.banking}
             </p>
 
             <div className="space-y-4">
@@ -181,6 +206,31 @@ export default function LoginPage() {
               <h1 className="text-2xl font-bold text-white">IRM Sentinel</h1>
             </div>
             <p className="text-sm text-slate-400">Integrated Risk Management Platform</p>
+          </div>
+
+          {/* Industry Selector */}
+          <div className="mb-5">
+            <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">Industry Vertical</p>
+            <div className="grid grid-cols-5 gap-1.5">
+              {getAllIndustries().map((ind) => {
+                const Icon = industryIcons[ind.id as IndustryId];
+                const isSelected = industryId === ind.id;
+                return (
+                  <button
+                    key={ind.id}
+                    onClick={() => setIndustry(ind.id as IndustryId)}
+                    className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs transition-all ${
+                      isSelected
+                        ? 'bg-cyan-600/20 border-cyan-500 text-cyan-300 border'
+                        : 'bg-slate-800/40 border-slate-700/50 text-slate-400 border hover:border-slate-600 hover:text-slate-300'
+                    }`}
+                  >
+                    <Icon size={16} />
+                    <span className="font-medium truncate w-full text-center">{ind.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Auth Mode Tabs */}

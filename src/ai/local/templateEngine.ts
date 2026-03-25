@@ -11,10 +11,23 @@ import {
 } from "../../domain/types";
 
 import { getDataAccess } from "../../data/DataAccessLayer";
+import { useIndustryStore } from "../../store/industryStore";
 
 export class TemplateEngine {
   constructor() {
     // Constructor takes no required arguments, uses internal seed data or optional context
+  }
+
+  /**
+   * Helper method to get industry-specific context from the industry store
+   */
+  private getIndustryContext() {
+    const { config } = useIndustryStore.getState();
+    return {
+      narrativeTone: config.narrativeTone,
+      label: config.label,
+      riskCategories: config.riskCategories || [],
+    };
   }
 
   /**
@@ -34,6 +47,20 @@ export class TemplateEngine {
     if (!issues || issues.length === 0) issues = dal.getIssues();
     if (!vendors || vendors.length === 0) vendors = dal.getVendors();
     if (!lossEvents || lossEvents.length === 0) lossEvents = dal.getLossEvents();
+
+    // Get industry context
+    const industryContext = this.getIndustryContext();
+    const { narrativeTone, label } = industryContext;
+
+    // Map industry to entity name
+    const entityNames: { [key: string]: string } = {
+      'Banking': 'INSTITUTION',
+      'Healthcare': 'ORGANIZATION',
+      'Technology': 'COMPANY',
+      'Energy': 'UTILITY/OPERATOR',
+      'Manufacturing': 'ENTERPRISE',
+    };
+    const entityName = entityNames[label] || 'INSTITUTION';
 
     const today = new Date().toLocaleDateString("en-US", {
       year: "numeric",
@@ -89,15 +116,20 @@ export class TemplateEngine {
       (e) => e.category === "Operational"
     ).length;
 
-    return `INSTITUTION RISK POSTURE SUMMARY - ${today}
+    // Build dynamic risk domains string
+    const riskDomains = industryContext.riskCategories.length > 0
+      ? industryContext.riskCategories.join(", ")
+      : "operational, compliance, credit, and strategic";
 
-The institution's aggregate risk profile remains ${aggregateProfile}. As of this report, the risk portfolio comprises ${risks.length} identified risk factors across operational, compliance, credit, and strategic domains. Critical risk exposures number ${criticalRisks}, with an additional ${highRisks} rated as high based on inherent and residual risk scores. The control environment addresses emerging vulnerabilities through ongoing remedial actions, with ${inProgressIssues} of ${issues.length} identified management findings currently in execution.
+    return `${entityName} RISK POSTURE SUMMARY - ${today}
+
+The ${entityName.toLowerCase()}'s aggregate risk profile remains ${aggregateProfile}. As of this report, the risk portfolio comprises ${risks.length} identified risk factors across ${riskDomains} domains. Critical risk exposures number ${criticalRisks}, with an additional ${highRisks} rated as high based on inherent and residual risk scores. The control environment addresses emerging vulnerabilities through ongoing remedial actions, with ${inProgressIssues} of ${issues.length} identified management findings currently in execution.
 
 Key Risk Indicators present mixed signals requiring management attention. ${breachedKris} KRIs have breached established thresholds, with ${criticalKris} KRIs at critical breach levels. An additional ${warningKris} KRIs are at warning levels, and ${deterioratingKris} display deteriorating trends. The quarterly loss event review identified ${lossEvents.length} confirmed losses totaling USD ${(totalLosses / 1000000).toFixed(2)}M, of which ${operationalLosses} were operational in nature. The loss distribution across risk categories reflects ${this.describeLossConcentration(lossEvents)} concentration.
 
 Third-party risk management activities identify ${criticalVendors} vendors classified as critical and ${highVendors} classified as high criticality. Service Level Agreement performance shows ${redSlaVendors} vendors in red status, indicating contracted performance not met. Compliance program oversight documents ${openIssues} open management findings requiring remedial action, with ${overdueIssues} items overdue for completion. Management findings include ${mraCount} Matters Requiring Attention (MRA) and ${mriaCount} Matters Requiring Immediate Attention (MRIA).
 
-The Risk Committee is advised to prioritize: (1) remediation of critical control gaps in ${this.getTopRiskCategories(risks, 2)} domains; (2) validation of third-party SLAs and performance metrics for critical vendors; (3) accelerated closure of ${overdueIssues} overdue management findings; and (4) assessment of potential capital and operational impact from pending regulatory changes and loss trends.`;
+The ${narrativeTone.boardTitle} Risk Committee is advised to prioritize: (1) remediation of critical control gaps in ${this.getTopRiskCategories(risks, 2)} domains; (2) validation of third-party SLAs and performance metrics for critical vendors; (3) accelerated closure of ${overdueIssues} overdue management findings; and (4) assessment of potential capital and operational impact from pending regulatory changes and loss trends.`;
   }
 
   /**
@@ -110,6 +142,10 @@ The Risk Committee is advised to prioritize: (1) remediation of critical control
     kris: KRI[]
   ): string {
     const lastExamDate = this.getLastExamDate();
+
+    // Get industry context
+    const industryContext = this.getIndustryContext();
+    const { narrativeTone } = industryContext;
 
     // Count controls by effectiveness
     const effectiveControls = controls.filter(
@@ -151,10 +187,16 @@ The Risk Committee is advised to prioritize: (1) remediation of critical control
     const breachedKris = kris.filter((k) => k.breachLevel === "Breach").length;
     const warningKris = kris.filter((k) => k.breachLevel === "Warning").length;
 
-    return `EXAMINATION REPORT COMMENTS - RISK MANAGEMENT
+    // Build dynamic risk domains string
+    const industryContext2 = this.getIndustryContext();
+    const riskDomains = industryContext2.riskCategories.length > 0
+      ? industryContext2.riskCategories.join(", ")
+      : "operational, credit, market, compliance, cyber, third-party, strategic, and liquidity";
+
+    return `${narrativeTone.regulatoryPrefix.toUpperCase()} EXAMINATION REPORT - RISK MANAGEMENT
 
 RISK PROFILE AND CONTROL ENVIRONMENT
-As of the examination date of ${lastExamDate}, the institution's risk profile is rated ${riskProfileRating}. The risk management framework encompasses ${risks.length} documented risk exposures distributed across operational, credit, market, compliance, cyber, third-party, strategic, and liquidity domains. Management has implemented a tiered risk assessment and monitoring program with documented escalation protocols aligned with business units and risk categories.
+As of the examination date of ${lastExamDate}, the institution's risk profile is rated ${riskProfileRating}. The risk management framework encompasses ${risks.length} documented risk exposures distributed across ${riskDomains} domains. Management has implemented a tiered risk assessment and monitoring program with documented escalation protocols aligned with business units and risk categories.
 
 CONTROL ENVIRONMENT ASSESSMENT
 The control environment is rated ${controlEnvironmentAssessment}. Of ${controls.length} key controls assessed, ${effectiveControls} are operating effectively, ${partiallyEffectiveControls} are partially effective, and ${ineffectiveControls} are ineffective. Controls span ${frameworks.size} regulatory frameworks (${Array.from(frameworks).join(", ")}). Critical controls over ${this.getTopRiskCategories(risks, 2)} remain foundational to institutional resilience. The examination identified ${ineffectiveControls} control deficiencies, primarily relating to preventive control design, compensating control adequacy, and monitoring frequency for high-risk processes. Control testing indicates ${Math.round((effectiveControls / controls.length) * 100)}% of controls are operating as designed.
@@ -162,7 +204,7 @@ The control environment is rated ${controlEnvironmentAssessment}. Of ${controls.
 KEY RISK INDICATORS AND MANAGEMENT FINDINGS
 The institution monitors ${kris.length} Key Risk Indicators across risk categories. Current KRI status shows ${breachedKris} metrics at breach thresholds and ${warningKris} at warning levels, indicating elevated risk exposures requiring heightened monitoring. Management has documented ${issues.length} findings for remedial attention, including ${openMRAs} open Matters Requiring Attention, ${mraInProgress} in progress, and ${mriaCount} Matters Requiring Immediate Attention. Critical findings number ${criticalIssues}, with ${highIssues} high-severity items. Management's remediation timeline demonstrates responsiveness, with committed completion dates primarily within 90-180 days.
 
-SUPERVISORY EXPECTATIONS
+${narrativeTone.regulatoryPrefix.toUpperCase()} EXPECTATIONS
 Management should continue enhancement of the control environment through timely completion of remaining remedial actions by committed deadlines. Quarterly control testing and KRI monitoring should provide adequate early warning of emerging control gaps. The Risk Committee should maintain board-level oversight of key risk metrics, inherent versus residual risk trends, and third-party risk concentrations. The internal audit function should maintain direct reporting to the audit committee and validate control effectiveness across all frameworks.`;
   }
 

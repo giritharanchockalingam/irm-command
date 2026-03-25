@@ -15,11 +15,44 @@ export type RiskCategory =
   | 'Cyber'
   | 'ThirdParty'
   | 'Strategic'
-  | 'Liquidity';
+  | 'Liquidity'
+  // Healthcare
+  | 'Clinical'
+  | 'Research'
+  // Technology
+  | 'AI'
+  | 'Privacy'
+  // Energy
+  | 'Safety'
+  | 'Environmental'
+  // Manufacturing
+  | 'Quality'
+  | 'ESG';
 
 export type SeverityLevel = 'Critical' | 'High' | 'Medium' | 'Low';
 
-export type Framework = 'Basel III' | 'SOX' | 'GDPR' | 'NIST' | 'ISO27001';
+export type Framework =
+  | 'Basel III'
+  | 'SOX'
+  | 'GDPR'
+  | 'NIST'
+  | 'ISO27001'
+  // Healthcare
+  | 'HIPAA'
+  | 'HITECH'
+  | 'FDA 21 CFR Part 11'
+  // Technology
+  | 'SOC 2'
+  | 'EU AI Act'
+  | 'CCPA'
+  // Energy
+  | 'NERC CIP'
+  | 'EPA'
+  | 'DOT PHMSA'
+  // Manufacturing
+  | 'ISO 9001'
+  | 'ISO 45001'
+  | 'OSHA';
 
 export type ControlStatus = 'Implemented' | 'Partially Implemented' | 'Not Implemented' | 'Under Review';
 
@@ -43,7 +76,29 @@ export type KRIBreachLevel = 'Normal' | 'Warning' | 'Breach' | 'Critical';
 
 export type KRITrend = 'Improving' | 'Stable' | 'Deteriorating';
 
-export type RegulatorySource = 'OCC' | 'FDIC' | 'Federal Reserve' | 'Basel Committee' | 'SEC' | 'EU Commission';
+export type RegulatorySource =
+  | 'OCC'
+  | 'FDIC'
+  | 'Federal Reserve'
+  | 'Basel Committee'
+  | 'SEC'
+  | 'EU Commission'
+  // Healthcare
+  | 'HHS'
+  | 'OCR'
+  | 'FDA'
+  | 'CMS'
+  // Technology
+  | 'FTC'
+  | 'DPA'
+  // Energy
+  | 'FERC'
+  | 'NERC'
+  | 'PHMSA'
+  // Manufacturing
+  | 'OSHA'
+  | 'EPA'
+  | 'CPSC';
 
 export type RegulatoryStatus = 'Monitoring' | 'Impact Assessment' | 'Implementation' | 'Completed';
 
@@ -70,7 +125,31 @@ export type BusinessUnit =
   | 'Operations'
   | 'Technology'
   | 'Risk Management'
-  | 'Compliance';
+  | 'Compliance'
+  // Healthcare
+  | 'Clinical Operations'
+  | 'Health IT'
+  | 'Patient Services'
+  | 'Research & Development'
+  | 'Pharmacy'
+  // Technology
+  | 'Engineering'
+  | 'Product'
+  | 'Data Science'
+  | 'Security'
+  | 'Infrastructure'
+  // Energy
+  | 'Generation'
+  | 'Transmission'
+  | 'Distribution'
+  | 'Trading'
+  | 'Exploration'
+  // Manufacturing
+  | 'Production'
+  | 'Supply Chain'
+  | 'Quality Assurance'
+  | 'Logistics'
+  | 'R&D';
 
 export type PolicyLifecycleStage = 'draft' | 'review' | 'approve' | 'publish' | 'retire';
 
@@ -375,7 +454,7 @@ export interface RiskHeatmapCell {
 
 export interface DashboardMetrics {
   riskPortfolio: RiskPortfolio;
-  complianceByFramework: Record<Framework, ComplianceStatus>;
+  complianceByFramework: Partial<Record<Framework, ComplianceStatus>>;
   vendorRiskSummary: VendorRiskSummary;
   issueMetrics: IssueMetrics;
   lossEventYTD: number;
