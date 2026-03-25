@@ -8,12 +8,8 @@ import {
   AlertCircle,
   TrendingUp,
   Zap,
-  FileText,
-  Shield,
-  BarChart3,
-  Target,
-  ClipboardList,
 } from 'lucide-react';
+import RiskNarrativeCard from '../components/RiskNarrativeCard';
 import { useSecurity, RequirePermission } from '../security/SecurityContext';
 import { getDataAccess } from '../data/DataAccessLayer';
 import { RiskScenario } from '../domain/types';
@@ -700,202 +696,21 @@ export default function Workbench() {
                 )}
               </Card>
 
-              {/* AI Assessment Narrative — Structured */}
-              <Card className="bg-navy-900 border-slate-700 p-0 overflow-hidden">
-                {/* Header bar */}
-                <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-navy-900 via-navy-800 to-navy-900 border-b border-slate-700">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-cyan-600/15 border border-cyan-500/30 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-cyan-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">AI Risk Assessment</h3>
-                      <p className="text-xs text-slate-400">OCC/FDIC-style narrative &bull; Auto-generated</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleRegenerate}
-                    className="text-sm px-4 py-1.5 bg-cyan-600/15 hover:bg-cyan-600/25 border border-cyan-500/30 text-cyan-400 rounded-lg transition flex items-center gap-1.5"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    Regenerate
-                  </button>
-                </div>
-
-                <div className="px-6 py-5 space-y-6">
-                  {/* Title badge */}
-                  <div className="flex items-center gap-2">
-                    <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/40 to-transparent" />
-                    <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider px-3 py-1 bg-cyan-600/10 rounded-full border border-cyan-500/20">
-                      {formData.scenarioName}
-                    </span>
-                    <div className="h-px flex-1 bg-gradient-to-l from-cyan-500/40 to-transparent" />
-                  </div>
-
-                  {/* Section 1: Scenario Overview — Key/Value Grid */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <ClipboardList className="w-4 h-4 text-blue-400" />
-                      <h4 className="text-sm font-semibold text-blue-400 uppercase tracking-wide">Scenario Overview</h4>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { label: 'Business Line', value: formData.businessLine },
-                        { label: 'Product', value: formData.product },
-                        { label: 'Geography', value: formData.geography },
-                        { label: 'Risk Type', value: formData.riskType },
-                      ].map((item) => (
-                        <div key={item.label} className="bg-navy-800/60 rounded-lg px-3 py-2 border border-slate-700/50">
-                          <span className="text-xs text-slate-400 block">{item.label}</span>
-                          <span className="text-sm text-white font-medium">{item.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Section 2: Assessment Ratings — Color-coded Metric Cards */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Target className="w-4 h-4 text-amber-400" />
-                      <h4 className="text-sm font-semibold text-amber-400 uppercase tracking-wide">Assessment Ratings</h4>
-                    </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                      <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/5 border-orange-500/30 rounded-lg px-3 py-2.5 border">
-                        <span className="text-xs text-slate-400 block mb-0.5">Inherent Risk</span>
-                        <span className="text-base font-bold text-orange-300">{formData.inherentRisk}/5</span>
-                      </div>
-                      <div className="bg-gradient-to-br from-green-500/20 to-green-600/5 border-green-500/30 rounded-lg px-3 py-2.5 border">
-                        <span className="text-xs text-slate-400 block mb-0.5">Control Strength</span>
-                        <span className="text-base font-bold text-green-300">{formData.controlStrength}/5</span>
-                      </div>
-                      <div className="bg-gradient-to-br from-rose-500/20 to-rose-600/5 border-rose-500/30 rounded-lg px-3 py-2.5 border">
-                        <span className="text-xs text-slate-400 block mb-0.5">Residual Risk</span>
-                        <span className="text-base font-bold text-rose-300">{scoringResult.residualRisk.toFixed(2)}/5</span>
-                      </div>
-                      <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/5 border-cyan-500/30 rounded-lg px-3 py-2.5 border">
-                        <span className="text-xs text-slate-400 block mb-0.5">Composite Score</span>
-                        <span className="text-base font-bold text-cyan-300">{scoringResult.compositeScore.toFixed(2)}/5</span>
-                      </div>
-                      <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/5 border-purple-500/30 rounded-lg px-3 py-2.5 border">
-                        <span className="text-xs text-slate-400 block mb-0.5">Historical Loss</span>
-                        <span className="text-base font-bold text-purple-300">USD {(formData.lossHistory / 1000000).toFixed(2)}M</span>
-                      </div>
-                      <div className={`bg-gradient-to-br rounded-lg px-3 py-2.5 border ${
-                        scoringResult.compositeScore <= 2 ? 'from-green-500/20 to-green-600/5 border-green-500/30' :
-                        scoringResult.compositeScore <= 3 ? 'from-yellow-500/20 to-yellow-600/5 border-yellow-500/30' :
-                        scoringResult.compositeScore <= 4 ? 'from-orange-500/20 to-orange-600/5 border-orange-500/30' :
-                        'from-red-500/20 to-red-600/5 border-red-500/30'
-                      }`}>
-                        <span className="text-xs text-slate-400 block mb-0.5">Rating</span>
-                        <span className={`text-base font-bold ${
-                          scoringResult.compositeScore <= 2 ? 'text-green-300' :
-                          scoringResult.compositeScore <= 3 ? 'text-yellow-300' :
-                          scoringResult.compositeScore <= 4 ? 'text-orange-300' :
-                          'text-red-300'
-                        }`}>{getRatingLabel(scoringResult.compositeScore)}</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2.5 leading-relaxed italic">
-                      This rating reflects the likelihood of occurrence, potential impact magnitude across financial, reputational, regulatory, and operational dimensions, and the current state of preventive and detective controls.
-                    </p>
-                  </div>
-
-                  {/* Section 3: Risk Score Driver Analysis */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <BarChart3 className="w-4 h-4 text-emerald-400" />
-                      <h4 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide">Risk Score Driver Analysis</h4>
-                    </div>
-                    <p className="text-sm text-slate-300 mb-3 leading-relaxed">
-                      The composite risk score of <span className="text-cyan-400 font-semibold">{scoringResult.compositeScore.toFixed(2)}/5</span> is derived from the following components and their relative contributions:
-                    </p>
-                    <div className="space-y-1.5 mb-3">
-                      {scoringResult.factorContributions
-                        .slice()
-                        .sort((a, b) => b.contribution - a.contribution)
-                        .map((factor, i) => (
-                        <div key={i} className="flex items-center gap-3 bg-navy-800/40 rounded-lg px-3 py-2 border border-slate-700/40">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                          <span className="text-sm text-white font-medium flex-1">{factor.name}</span>
-                          <span className="text-xs text-slate-400">Value {factor.value.toFixed(1)}/5</span>
-                          <span className="text-xs text-slate-500 mx-1">&bull;</span>
-                          <span className="text-xs text-slate-400">Wt {(factor.weight * 100).toFixed(0)}%</span>
-                          <span className="text-xs text-slate-500 mx-1">&bull;</span>
-                          <span className="text-xs text-emerald-400 font-semibold">{(factor.contribution * 100).toFixed(1)}%</span>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-sm text-slate-300 leading-relaxed">
-                      The key drivers of risk exposure are{' '}
-                      {scoringResult.factorContributions
-                        .slice()
-                        .sort((a, b) => b.contribution - a.contribution)
-                        .slice(0, 3)
-                        .map((f, i, arr) => (
-                          <span key={i}>
-                            <span className="text-white font-medium">{f.name}</span>
-                            <span className="text-slate-400"> ({(f.contribution * 100).toFixed(1)}%)</span>
-                            {i < arr.length - 1 ? ', ' : ''}
-                          </span>
-                        ))}
-                      . Historical loss data shows <span className="text-purple-300 font-medium">USD {(formData.lossHistory / 1000000).toFixed(2)}M</span> in realized losses across similar scenarios.
-                    </p>
-                  </div>
-
-                  {/* Section 4: Residual Risk Profile */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Shield className="w-4 h-4 text-rose-400" />
-                      <h4 className="text-sm font-semibold text-rose-400 uppercase tracking-wide">Residual Risk Profile</h4>
-                    </div>
-                    <div className="bg-gradient-to-br from-rose-500/5 to-transparent rounded-lg px-4 py-3 border border-rose-500/20">
-                      <p className="text-sm text-slate-200 leading-relaxed">
-                        Following the application of existing controls assessed at <span className="text-green-300 font-semibold">{formData.controlStrength}/5</span> strength,
-                        the residual risk profile is{' '}
-                        <span className={`font-semibold ${
-                          scoringResult.residualRisk >= 4 ? 'text-red-400' :
-                          scoringResult.residualRisk >= 3 ? 'text-yellow-300' :
-                          'text-green-300'
-                        }`}>
-                          {scoringResult.residualRisk >= 4 ? 'elevated and requires active management' :
-                           scoringResult.residualRisk >= 3 ? 'moderate and within risk appetite' :
-                           'low and appropriately managed'}
-                        </span>.
-                        The institution&apos;s risk appetite threshold for this scenario is 3/5 or lower. Current residual exposure at{' '}
-                        <span className="text-white font-semibold">{scoringResult.residualRisk.toFixed(2)}/5</span>{' '}
-                        {scoringResult.residualRisk > 3 ? (
-                          <span className="text-red-400 font-semibold">exceeds</span>
-                        ) : (
-                          <span className="text-green-300 font-semibold">remains within</span>
-                        )}{' '}
-                        this threshold. Control effectiveness represents a{' '}
-                        <span className="text-cyan-300 font-semibold">
-                          {((formData.inherentRisk - scoringResult.residualRisk) * 20).toFixed(0)}%
-                        </span>{' '}
-                        risk reduction from inherent baseline.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Section 5: Remediation & Monitoring */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <AlertCircle className="w-4 h-4 text-yellow-400" />
-                      <h4 className="text-sm font-semibold text-yellow-400 uppercase tracking-wide">Remediation & Monitoring Expectations</h4>
-                    </div>
-                    <div className="bg-gradient-to-br from-yellow-500/5 to-transparent rounded-lg px-4 py-3 border border-yellow-500/20">
-                      <p className="text-sm text-slate-200 leading-relaxed">
-                        Management should prioritize control enhancements targeting the highest-impact risk drivers identified above.
-                        Quarterly risk reassessment should track inherent and residual trends.
-                        The Risk Committee should review this scenario assessment and remediation progress quarterly until residual risk is reduced to approved appetite levels.
-                        {scoringResult.residualRisk > 4 && (
-                          <span className="text-red-400 font-semibold"> Escalation is required as residual risk exceeds 4/5.</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              {/* AI Assessment Narrative */}
+              <RiskNarrativeCard
+                scenarioName={formData.scenarioName}
+                businessLine={formData.businessLine}
+                product={formData.product}
+                geography={formData.geography}
+                riskType={formData.riskType}
+                inherentRisk={formData.inherentRisk}
+                controlStrength={formData.controlStrength}
+                lossHistory={formData.lossHistory}
+                compositeScore={scoringResult.compositeScore}
+                residualRisk={scoringResult.residualRisk}
+                factorContributions={scoringResult.factorContributions}
+                onRegenerate={handleRegenerate}
+              />
 
               {/* Export Button */}
               <button
