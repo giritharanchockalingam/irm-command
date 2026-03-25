@@ -1,6 +1,5 @@
 import React from 'react';
 import { RotateCcw, FileText, Shield, BarChart3, AlertTriangle, Crosshair, Layers } from 'lucide-react';
-import { Card } from './ui/Card';
 
 interface FactorContribution {
   name: string;
@@ -68,7 +67,7 @@ export default function RiskNarrativeCard(props: RiskNarrativeCardProps) {
       : 'low and appropriately managed';
 
   return (
-    <Card className="bg-navy-900 border-slate-700 overflow-hidden p-0">
+    <div className="bg-navy-900 border border-slate-700 rounded-xl overflow-hidden">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-slate-700 bg-navy-800/50">
         <div className="flex items-center gap-2.5">
@@ -208,6 +207,6 @@ export default function RiskNarrativeCard(props: RiskNarrativeCardProps) {
         </div>
 
       </div>
-    </Card>
+    </div>
   );
 }
