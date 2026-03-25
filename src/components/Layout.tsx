@@ -248,9 +248,11 @@ function Layout() {
         <div className={`p-3 ${isDark ? 'border-slate-700' : 'border-gray-200'} border-t`}>
           <button
             onClick={() => setSidebarExpanded(!sidebarExpanded)}
-            className={`w-full flex items-center justify-center p-2 rounded-lg ${isDark ? 'hover:bg-navy-800' : 'hover:bg-gray-100'} transition-colors`}
+            className={`w-full flex items-center ${sidebarExpanded ? 'justify-start pl-3 gap-2' : 'justify-center'} p-2 rounded-lg ${isDark ? 'hover:bg-navy-800 text-slate-400' : 'hover:bg-gray-100 text-gray-500'} transition-colors`}
+            title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           >
-            {sidebarExpanded ? <ChevronLeft size={20} /> : <Menu size={20} />}
+            {sidebarExpanded ? <ChevronLeft size={18} /> : <Menu size={20} />}
+            {sidebarExpanded && <span className="text-xs font-medium">Collapse</span>}
           </button>
         </div>
       </aside>
@@ -326,7 +328,7 @@ function Layout() {
         </header>
 
         {/* Content area */}
-        <main className={`flex-1 overflow-y-auto ${isDark ? 'bg-navy-950' : 'bg-gray-50'}`}>
+        <main className={`flex-1 overflow-y-auto pb-8 ${isDark ? 'bg-navy-950' : 'bg-gray-50'}`}>
           <Outlet />
         </main>
       </div>
@@ -334,7 +336,7 @@ function Layout() {
       {/* Copilot floating button */}
       <button
         onClick={toggleCopilot}
-        className={`fixed bottom-12 right-6 w-14 h-14 rounded-full ${
+        className={`fixed bottom-14 right-6 z-50 w-14 h-14 rounded-full ${
           isDark ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-cyan-500 hover:bg-cyan-600'
         } text-white flex items-center justify-center shadow-lg ${copilotOpen ? 'alert-pulse' : ''} transition-all`}
       >
