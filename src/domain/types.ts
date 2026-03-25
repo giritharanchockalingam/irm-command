@@ -1,5 +1,5 @@
 /**
- * IRM Command - Integrated Risk Management Platform for G-SIB Banks
+ * IRM Sentinel - Integrated Risk Management Platform for G-SIB Banks
  * Comprehensive TypeScript types for the entire IRM data model
  */
 

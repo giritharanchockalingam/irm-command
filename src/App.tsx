@@ -106,7 +106,7 @@ function HealthIndicator() {
 
   return (
     <div className={`fixed bottom-0 left-0 right-0 z-50 ${isDark ? 'bg-slate-900/90 border-slate-700' : 'bg-white/90 border-gray-200'} border-t px-4 py-1 flex items-center justify-between text-xs text-slate-500`}>
-      <span>IRM Command v{config.app.version} | {config.app.environment}</span>
+      <span>IRM Sentinel v{config.app.version} | {config.app.environment}</span>
       <span className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
         System Operational

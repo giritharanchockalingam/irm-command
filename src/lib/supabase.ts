@@ -1,6 +1,6 @@
 /**
  * Supabase Client - Initialized from environment variables
- * Uses the irm schema for all IRM Command data
+ * Uses the irm schema for all IRM Sentinel data
  */
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 

@@ -1,5 +1,5 @@
 /**
- * Client-side AI Orchestrator for IRM Command GRC Platform
+ * Client-side AI Orchestrator for IRM Sentinel GRC Platform
  * Adapted from supply-chain-platform pattern for browser-only operation
  * Routes queries by domain detection, complexity estimation, and provider selection
  */

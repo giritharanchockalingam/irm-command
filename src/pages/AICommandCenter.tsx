@@ -146,7 +146,7 @@ export default function AICommandCenter() {
                 <Bot size={24} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">IRM Command Center</h1>
+                <h1 className="text-2xl font-bold">IRM Sentinel Center</h1>
                 <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
                   AI-Powered GRC Intelligence
                 </p>

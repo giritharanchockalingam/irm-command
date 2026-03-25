@@ -1,8 +1,8 @@
-# Security & Threat Model – IRM Command
+# Security & Threat Model – IRM Sentinel
 
 ## Application Overview
 
-**IRM Command** – Enterprise IRM/GRC Platform
+**IRM Sentinel** – Enterprise IRM/GRC Platform
 **Current Architecture**: Single-page React app (prototype)
 **Future Architecture**: SPA + governed API layer + Claude AI governance
 

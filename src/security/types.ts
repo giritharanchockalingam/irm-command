@@ -1,4 +1,4 @@
-// User, Role, Permission model for IRM Command
+// User, Role, Permission model for IRM Sentinel
 // Defines the core security types and role-based access control
 
 export type Role =

@@ -2,7 +2,7 @@
   "name": "irm-command",
   "private": true,
   "version": "1.0.0",
-  "description": "IRM Command – Enterprise AI-Powered Integrated Risk Management Platform",
+  "description": "IRM Sentinel – Enterprise AI-Powered Integrated Risk Management Platform",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,19 +1,19 @@
 # Performance Testing Plan
 
-**IRM Command** - Enterprise GRC SaaS Platform
+**IRM Sentinel** - Enterprise GRC SaaS Platform
 **Document Version**: 1.0
 **Last Updated**: 2026-03-24
 **Status**: Active
 
 ## 1. Executive Summary
 
-This document outlines IRM Command's comprehensive performance testing strategy, including critical user journeys, SLO targets, test types, tooling, and CI/CD integration. Performance testing is mandatory for all release candidates to ensure enterprise-grade reliability.
+This document outlines IRM Sentinel's comprehensive performance testing strategy, including critical user journeys, SLO targets, test types, tooling, and CI/CD integration. Performance testing is mandatory for all release candidates to ensure enterprise-grade reliability.
 
 ---
 
 ## 2. Critical User Journeys
 
-IRM Command's performance testing focuses on the most common and high-value user workflows.
+IRM Sentinel's performance testing focuses on the most common and high-value user workflows.
 
 ### Journey 1: Dashboard Load (Analytics View)
 
@@ -296,7 +296,7 @@ export const options = {
   ext: {
     loadimpact: {
       projectID: 3356642,
-      name: 'IRM Command - Dashboard Load Test',
+      name: 'IRM Sentinel - Dashboard Load Test',
     },
   },
 };

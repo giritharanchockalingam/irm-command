@@ -54,7 +54,7 @@ const isProductionEnv = resolvedEnvironment === 'production' || resolvedEnvironm
 
 const config: AppConfig = {
   app: {
-    name: 'IRM Command',
+    name: 'IRM Sentinel',
     version: import.meta.env?.VITE_APP_VERSION || '1.0.0',
     buildHash: import.meta.env?.VITE_BUILD_HASH || 'dev-' + new Date().toISOString().split('T')[0],
     environment: resolvedEnvironment,

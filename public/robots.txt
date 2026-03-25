@@ -1,4 +1,4 @@
-# IRM Command - Robots Exclusion
+# IRM Sentinel - Robots Exclusion
 User-agent: *
 Disallow: /login
 Disallow: /auth

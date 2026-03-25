@@ -489,7 +489,7 @@ export default function ControlRegister() {
         {/* Footer Note */}
         <div className={`mt-6 p-4 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-blue-50'}`}>
           <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-blue-900'}`}>
-            This Control Register represents IRM Command's internal SOC 2 controls and is updated quarterly following our annual audit cycle.
+            This Control Register represents IRM Sentinel's internal SOC 2 controls and is updated quarterly following our annual audit cycle.
           </p>
         </div>
       </div>

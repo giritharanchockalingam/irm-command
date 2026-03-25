@@ -1,4 +1,4 @@
-# Enterprise Readiness Checklist – IRM Command
+# Enterprise Readiness Checklist – IRM Sentinel
 
 Alignment to SaaS compliance expectations (SOC 2, ISO 27001, HIPAA-ready).
 

@@ -1,8 +1,8 @@
-# IRM Command: Enterprise Architecture Documentation
+# IRM Sentinel: Enterprise Architecture Documentation
 
 ## 1. Overview
 
-**IRM Command** is an Enterprise AI-Powered Integrated Risk Management (IRM) platform designed for Global Systemically Important Banks (G-SIBs). The platform provides comprehensive governance, risk, and compliance (GRC) capabilities through an intelligent, AI-driven interface.
+**IRM Sentinel** is an Enterprise AI-Powered Integrated Risk Management (IRM) platform designed for Global Systemically Important Banks (G-SIBs). The platform provides comprehensive governance, risk, and compliance (GRC) capabilities through an intelligent, AI-driven interface.
 
 - **Product Vision**: Unified IRM across operational, credit, market, liquidity, compliance, and enterprise risks
 - **Implementation Model**: Browser-only prototype with embedded Claude governance blueprint for production deployment

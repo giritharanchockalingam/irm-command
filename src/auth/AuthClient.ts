@@ -1,5 +1,5 @@
 /**
- * AuthClient abstraction layer for IRM Command
+ * AuthClient abstraction layer for IRM Sentinel
  * Supports DemoAuth (prototype) and OIDC (production) implementations
  * Shaped for enterprise SSO with Okta, Entra ID, Google Workspace
  */
@@ -46,77 +46,77 @@ export interface AuthClient {
 // ============ DEMO USERS ============
 
 const DEMO_CLAIMS: Record<string, JWTClaims> = {
-  'cro@irmcommand.demo': {
+  'cro@irmsentinel.demo': {
     sub: 'USR-001',
-    email: 'cro@irmcommand.demo',
+    email: 'cro@irmsentinel.demo',
     tenant_id: 'TNT-001',
     roles: ['CRO'],
     mfa_verified: true,
     name: 'Sarah Chen',
     exp: Math.floor(Date.now() / 1000) + 86400,
     iat: Math.floor(Date.now() / 1000),
-    iss: 'irm-command-demo',
-    aud: 'irm-command',
+    iss: 'irm-sentinel-demo',
+    aud: 'irm-sentinel',
   },
-  'compliance@irmcommand.demo': {
+  'compliance@irmsentinel.demo': {
     sub: 'USR-002',
-    email: 'compliance@irmcommand.demo',
+    email: 'compliance@irmsentinel.demo',
     tenant_id: 'TNT-001',
     roles: ['ComplianceOfficer'],
     mfa_verified: true,
     name: 'Michael Rodriguez',
     exp: Math.floor(Date.now() / 1000) + 86400,
     iat: Math.floor(Date.now() / 1000),
-    iss: 'irm-command-demo',
-    aud: 'irm-command',
+    iss: 'irm-sentinel-demo',
+    aud: 'irm-sentinel',
   },
-  'tprm@irmcommand.demo': {
+  'tprm@irmsentinel.demo': {
     sub: 'USR-003',
-    email: 'tprm@irmcommand.demo',
+    email: 'tprm@irmsentinel.demo',
     tenant_id: 'TNT-001',
     roles: ['TPRMAnalyst'],
     mfa_verified: true,
     name: 'Jennifer Park',
     exp: Math.floor(Date.now() / 1000) + 86400,
     iat: Math.floor(Date.now() / 1000),
-    iss: 'irm-command-demo',
-    aud: 'irm-command',
+    iss: 'irm-sentinel-demo',
+    aud: 'irm-sentinel',
   },
-  'auditor@irmcommand.demo': {
+  'auditor@irmsentinel.demo': {
     sub: 'USR-004',
-    email: 'auditor@irmcommand.demo',
+    email: 'auditor@irmsentinel.demo',
     tenant_id: 'TNT-001',
     roles: ['Auditor'],
     mfa_verified: true,
     name: 'David Thompson',
     exp: Math.floor(Date.now() / 1000) + 86400,
     iat: Math.floor(Date.now() / 1000),
-    iss: 'irm-command-demo',
-    aud: 'irm-command',
+    iss: 'irm-sentinel-demo',
+    aud: 'irm-sentinel',
   },
-  'examiner@irmcommand.demo': {
+  'examiner@irmsentinel.demo': {
     sub: 'USR-005',
-    email: 'examiner@irmcommand.demo',
+    email: 'examiner@irmsentinel.demo',
     tenant_id: 'TNT-001',
     roles: ['ExaminerView'],
     mfa_verified: true,
     name: 'Lisa Anderson',
     exp: Math.floor(Date.now() / 1000) + 86400,
     iat: Math.floor(Date.now() / 1000),
-    iss: 'irm-command-demo',
-    aud: 'irm-command',
+    iss: 'irm-sentinel-demo',
+    aud: 'irm-sentinel',
   },
-  'admin@irmcommand.demo': {
+  'admin@irmsentinel.demo': {
     sub: 'USR-006',
-    email: 'admin@irmcommand.demo',
+    email: 'admin@irmsentinel.demo',
     tenant_id: 'TNT-001',
     roles: ['RiskAdmin'],
     mfa_verified: true,
     name: 'Robert Martinez',
     exp: Math.floor(Date.now() / 1000) + 86400,
     iat: Math.floor(Date.now() / 1000),
-    iss: 'irm-command-demo',
-    aud: 'irm-command',
+    iss: 'irm-sentinel-demo',
+    aud: 'irm-sentinel',
   },
 };
 
@@ -127,15 +127,15 @@ export class DemoAuthClient implements AuthClient {
   private listeners: Array<(user: JWTClaims | null) => void> = [];
   private defaultEmail: string;
 
-  constructor(defaultEmail: string = 'cro@irmcommand.demo') {
+  constructor(defaultEmail: string = 'cro@irmsentinel.demo') {
     this.defaultEmail = defaultEmail;
     // Auto-login with default user
-    this.currentUser = DEMO_CLAIMS[this.defaultEmail] || DEMO_CLAIMS['cro@irmcommand.demo'];
+    this.currentUser = DEMO_CLAIMS[this.defaultEmail] || DEMO_CLAIMS['cro@irmsentinel.demo'];
   }
 
   async login(options?: { provider?: string }): Promise<void> {
     const email = options?.provider || this.defaultEmail;
-    const user = DEMO_CLAIMS[email] || DEMO_CLAIMS['cro@irmcommand.demo'];
+    const user = DEMO_CLAIMS[email] || DEMO_CLAIMS['cro@irmsentinel.demo'];
     this.currentUser = {
       ...user,
       iat: Math.floor(Date.now() / 1000),
@@ -818,9 +818,9 @@ export class OIDCAuthClient implements AuthClient {
  * All values can be overridden at build time via VITE_OIDC_* env vars.
  */
 const DEFAULT_OIDC_CONFIG: AuthClientConfig = {
-  issuer: import.meta.env?.VITE_OIDC_ISSUER || 'https://login.irmcommand.com/oauth2',
-  audience: import.meta.env?.VITE_OIDC_AUDIENCE || 'irm-command-api',
-  clientId: import.meta.env?.VITE_OIDC_CLIENT_ID || 'irm-command-spa',
+  issuer: import.meta.env?.VITE_OIDC_ISSUER || 'https://login.irmsentinel.com/oauth2',
+  audience: import.meta.env?.VITE_OIDC_AUDIENCE || 'irm-sentinel-api',
+  clientId: import.meta.env?.VITE_OIDC_CLIENT_ID || 'irm-sentinel-spa',
   redirectUri: import.meta.env?.VITE_OIDC_REDIRECT_URI ||
     `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'}/auth/callback`,
   logoutUri: import.meta.env?.VITE_OIDC_LOGOUT_URI ||

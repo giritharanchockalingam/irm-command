@@ -271,7 +271,7 @@ function Layout() {
             <div className={`w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-bold`}>
               I
             </div>
-            {sidebarExpanded && <span className="font-bold text-sm">IRM Command</span>}
+            {sidebarExpanded && <span className="font-bold text-sm">IRM Sentinel</span>}
           </Link>
         </div>
 

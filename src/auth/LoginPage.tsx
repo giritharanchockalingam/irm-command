@@ -25,12 +25,12 @@ interface DemoUser {
 }
 
 const DEMO_USERS: DemoUser[] = [
-  { role: 'Chief Risk Officer', name: 'Sarah Chen', email: 'cro@irmcommand.demo', description: 'Full admin access — all modules', icon: <Shield size={16} /> },
-  { role: 'Risk Administrator', name: 'Robert Martinez', email: 'admin@irmcommand.demo', description: 'Risk & control management', icon: <AlertTriangle size={16} /> },
-  { role: 'Compliance Officer', name: 'Michael Rodriguez', email: 'compliance@irmcommand.demo', description: 'Compliance & regulatory', icon: <FileText size={16} /> },
-  { role: 'TPRM Analyst', name: 'Jennifer Park', email: 'tprm@irmcommand.demo', description: 'Vendor risk management', icon: <Users size={16} /> },
-  { role: 'Internal Auditor', name: 'David Thompson', email: 'auditor@irmcommand.demo', description: 'Read-only + audit export', icon: <Eye size={16} /> },
-  { role: 'Regulatory Examiner', name: 'Lisa Anderson', email: 'examiner@irmcommand.demo', description: 'Minimal read-only view', icon: <Lock size={16} /> },
+  { role: 'Chief Risk Officer', name: 'Sarah Chen', email: 'cro@irmsentinel.demo', description: 'Full admin access — all modules', icon: <Shield size={16} /> },
+  { role: 'Risk Administrator', name: 'Robert Martinez', email: 'admin@irmsentinel.demo', description: 'Risk & control management', icon: <AlertTriangle size={16} /> },
+  { role: 'Compliance Officer', name: 'Michael Rodriguez', email: 'compliance@irmsentinel.demo', description: 'Compliance & regulatory', icon: <FileText size={16} /> },
+  { role: 'TPRM Analyst', name: 'Jennifer Park', email: 'tprm@irmsentinel.demo', description: 'Vendor risk management', icon: <Users size={16} /> },
+  { role: 'Internal Auditor', name: 'David Thompson', email: 'auditor@irmsentinel.demo', description: 'Read-only + audit export', icon: <Eye size={16} /> },
+  { role: 'Regulatory Examiner', name: 'Lisa Anderson', email: 'examiner@irmsentinel.demo', description: 'Minimal read-only view', icon: <Lock size={16} /> },
 ];
 
 // ============ FEATURES ============
@@ -129,7 +129,7 @@ export default function LoginPage() {
                 <span className="text-xl font-bold text-white">I</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">IRM Command</h1>
+                <h1 className="text-2xl font-bold text-white">IRM Sentinel</h1>
                 <p className="text-xs text-slate-400">Integrated Risk Management</p>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function LoginPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-xl font-bold text-white">I</span>
               </div>
-              <h1 className="text-2xl font-bold text-white">IRM Command</h1>
+              <h1 className="text-2xl font-bold text-white">IRM Sentinel</h1>
             </div>
             <p className="text-sm text-slate-400">Integrated Risk Management Platform</p>
           </div>
@@ -365,7 +365,7 @@ export default function LoginPage() {
               <div className="mb-5">
                 <h3 className="text-lg font-semibold text-white mb-1">Demo Credentials</h3>
                 <p className="text-sm text-slate-400">
-                  Click any role below to instantly sign in and explore IRM Command with that persona's permissions.
+                  Click any role below to instantly sign in and explore IRM Sentinel with that persona's permissions.
                 </p>
               </div>
 
@@ -408,7 +408,7 @@ export default function LoginPage() {
 
           {/* Bottom footer */}
           <div className="mt-8 text-center text-[10px] text-slate-600">
-            IRM Command v1.0.0 • Prototype • Built for G-SIB Banks
+            IRM Sentinel v1.0.0 • Prototype • Built for G-SIB Banks
           </div>
         </div>
       </div>

@@ -67,7 +67,7 @@ const quickActions = [
 ];
 
 const faqTopics = [
-  'What is IRM Command?',
+  'What is IRM Sentinel?',
   'How are risk scores calculated?',
   'What frameworks are supported?',
   'How does the TPRM module work?',
@@ -350,7 +350,7 @@ const Copilot: React.FC = () => {
               <div className="text-center max-w-md">
                 <Bot className={`w-12 h-12 ${isDark ? 'text-gray-600' : 'text-gray-400'} mx-auto mb-4`} />
                 <p className={`${mutedTextClass} text-sm leading-relaxed`}>
-                  Welcome to IRM Command Copilot. I'm your AI-powered GRC assistant, calibrated
+                  Welcome to IRM Sentinel Copilot. I'm your AI-powered GRC assistant, calibrated
                   to supervisory expectations across enterprise risk, compliance, and third-party
                   risk management. How can I assist your risk oversight today?
                 </p>

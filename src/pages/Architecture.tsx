@@ -124,7 +124,7 @@ function BusinessDomainDiagram({ isDark }: { isDark: boolean }) {
       {/* AI Orchestrator (bottom center) */}
       <g filter="url(#shadow1)">
         <rect x="300" y="170" width="400" height="70" rx="10" fill="url(#grcGrad2)" />
-        <text x="500" y="195" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">AI Orchestrator — IRM Command Center</text>
+        <text x="500" y="195" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">AI Orchestrator — IRM Sentinel Center</text>
         <text x="500" y="215" textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="11">Domain Detection → MCP Tools (18) → RAG Grounding → Multi-LLM Routing</text>
         <text x="500" y="230" textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize="10">Claude · OpenAI · Groq · Local Fallback</text>
       </g>
@@ -194,7 +194,7 @@ function ApplicationArchDiagram({ isDark }: { isDark: boolean }) {
       <g filter="url(#shadow2)">
         <rect x="50" y="50" width="900" height="60" rx="8" fill="url(#appGrad1)" />
         <text x="500" y="75" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">React 18 + TypeScript SPA (Vite)</text>
-        <text x="500" y="95" textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="11">Dashboard · TPRM · Compliance · AI Command Center · Exceptions · Architecture · SOC 2 Controls</text>
+        <text x="500" y="95" textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="11">Dashboard · TPRM · Compliance · AI Sentinel Center · Exceptions · Architecture · SOC 2 Controls</text>
       </g>
 
       {/* Tier 2: Modules */}
@@ -202,7 +202,7 @@ function ApplicationArchDiagram({ isDark }: { isDark: boolean }) {
         { x: 50, w: 215, label: 'Risk Module', sub: '15 risks · Heat map\nKRI monitor · Scenarios' },
         { x: 280, w: 215, label: 'Compliance Module', sub: '37 controls · 5 frameworks\nGap analysis · Reg changes' },
         { x: 510, w: 215, label: 'TPRM Module', sub: '10 vendors · SLA tracking\nConcentration risk' },
-        { x: 740, w: 210, label: 'AI Command Center', sub: 'Voice input · Chat UI\nTool metadata · RAG display' },
+        { x: 740, w: 210, label: 'AI Sentinel Center', sub: 'Voice input · Chat UI\nTool metadata · RAG display' },
       ].map((m, i) => (
         <g key={i} filter="url(#shadow2)">
           <rect x={m.x} y="130" width={m.w} height="75" rx="8" fill="url(#appGrad2)" />
@@ -443,12 +443,12 @@ const INTEGRATIONS: IntegrationItem[] = [
   { name: 'DORA', description: 'Digital Operational Resilience Act for EU financial entities — ICT risk management and incident reporting', status: 'available', tier: 'Built-in', capabilities: ['ICT Risk', 'Incident Report', 'Third Party', 'Resilience Test'], category: 'grc-frameworks' },
 
   // Cloud & Infrastructure
-  { name: 'Vercel', description: 'Edge deployment platform with global CDN, instant rollbacks, and preview deployments for IRM Command', status: 'connected', tier: 'Freemium', capabilities: ['Edge CDN', 'Serverless', 'Preview Deploys', 'Analytics'], category: 'cloud-infra', url: 'https://vercel.com' },
+  { name: 'Vercel', description: 'Edge deployment platform with global CDN, instant rollbacks, and preview deployments for IRM Sentinel', status: 'connected', tier: 'Freemium', capabilities: ['Edge CDN', 'Serverless', 'Preview Deploys', 'Analytics'], category: 'cloud-infra', url: 'https://vercel.com' },
   { name: 'AWS', description: 'Amazon Web Services for S3 document storage, Lambda functions, and SQS message queuing', status: 'available', tier: 'Paid', capabilities: ['S3', 'Lambda', 'SQS', 'CloudWatch'], category: 'cloud-infra' },
   { name: 'Azure', description: 'Microsoft Azure for enterprise-grade hosting, Active Directory SSO, and Azure AI services', status: 'placeholder', tier: 'Enterprise', capabilities: ['App Service', 'Entra ID', 'Azure AI', 'Key Vault'], category: 'cloud-infra' },
 
   // DevOps
-  { name: 'GitHub', description: 'Source control, pull requests, GitHub Actions CI/CD, and issue tracking for IRM Command codebase', status: 'connected', tier: 'Free', capabilities: ['Git Repos', 'Pull Requests', 'Actions CI/CD', 'Issues'], category: 'devops', url: 'https://github.com' },
+  { name: 'GitHub', description: 'Source control, pull requests, GitHub Actions CI/CD, and issue tracking for IRM Sentinel codebase', status: 'connected', tier: 'Free', capabilities: ['Git Repos', 'Pull Requests', 'Actions CI/CD', 'Issues'], category: 'devops', url: 'https://github.com' },
   { name: 'Jenkins', description: 'Self-hosted CI/CD for enterprise build pipelines and multi-stage deployment of GRC platform', status: 'available', tier: 'Free', capabilities: ['Build Pipelines', 'Multi-Stage', 'Plugin Ecosystem', 'Distributed'], category: 'devops' },
   { name: 'ArgoCD', description: 'GitOps continuous delivery for Kubernetes-based GRC microservices deployment', status: 'placeholder', tier: 'Free', capabilities: ['GitOps', 'K8s Deploy', 'Sync Policies', 'Rollbacks'], category: 'devops' },
 
@@ -770,7 +770,7 @@ const Architecture: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <Layers className="w-8 h-8" />
-            <h1 className="text-3xl font-bold">IRM Command Architecture</h1>
+            <h1 className="text-3xl font-bold">IRM Sentinel Architecture</h1>
           </div>
           <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-blue-100'}`}>
             TOGAF ADM-based architecture framework for enterprise GRC platform

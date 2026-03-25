@@ -87,7 +87,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </button>
             </div>
             <p className="text-xs text-slate-500 mt-4">
-              IRM Command v{config.app.version} | {config.app.environment}
+              IRM Sentinel v{config.app.version} | {config.app.environment}
             </p>
           </div>
         </div>

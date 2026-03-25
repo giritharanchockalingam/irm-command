@@ -431,7 +431,23 @@ Management should prioritize control enhancements targeting the highest-impact r
     const knowledgeIdx = fullMessage.indexOf('[knowledge context]');
     const message = knowledgeIdx > -1 ? fullMessage.substring(0, knowledgeIdx).trim() : fullMessage;
 
-    // Data-driven domain routing FIRST — query actual seed data for answers
+    // ---- Intent detection: conceptual vs data queries ----
+    // Conceptual questions ("what is X?", "explain X", "define X") should get
+    // educational answers from the FAQ, NOT raw data dumps.
+    const isConceptualQuery = /^(what\s+(is|are|does|do)|what.?s\s|explain|define|describe|tell\s+me\s+about|how\s+(does|do|is|are)|why\s+(is|are|do|does)|meaning\s+of|what\s+does\s+\w+\s+mean)/.test(message.trim())
+      || /\b(what\s+is\s+(a|an|the)?)\b/.test(message)
+      || /\b(explain|define|meaning|definition|concept|overview)\b/.test(message);
+
+    // For conceptual queries, try FAQ FIRST — if it has a real answer, use it
+    if (isConceptualQuery) {
+      const faqResponse = this.handleFAQ(message);
+      // Only use FAQ if it returned a real answer (not the fallback)
+      if (!faqResponse.startsWith("I don't have a specific answer")) {
+        return faqResponse;
+      }
+    }
+
+    // Data-driven domain routing — query actual seed data for answers
     const dataResponse = this.handleDataQuery(message);
     if (dataResponse) return dataResponse;
 
@@ -475,7 +491,7 @@ Management should prioritize control enhancements targeting the highest-impact r
       }
     }
 
-    // FAQ responses (improved matching)
+    // FAQ responses as final fallback
     return this.handleFAQ(message);
   }
 
@@ -589,7 +605,7 @@ Management should prioritize control enhancements targeting the highest-impact r
       const effective = controls.filter(c => c.effectiveness === 'Effective').length;
       const partial = controls.filter(c => c.effectiveness === 'Partially Effective').length;
       const ineffective = controls.filter(c => c.effectiveness === 'Ineffective').length;
-      return `SOC 2 CONTROL STATUS\n\nIRM Command implements 15 SOC 2 Trust Services controls:\n• Security (CC1-CC7): 8 controls — RBAC, SSO/MFA, encryption, SIEM, incident response\n• Availability (A1.1-A1.4): 4 controls — 99.9% SLA, DR plan, backups, environmental safeguards\n• Confidentiality (C1.1-C1.3): 3 controls — data classification, retention, tokenization\n\nImplementation: 13 of 15 implemented (87% readiness)\nPending: A1.3 (Backup & Recovery testing), C1.2 (Data Retention & Disposal)\n\nOverall Control Environment: ${controls.length} total controls across all frameworks\n• Effective: ${effective} | Partially Effective: ${partial} | Ineffective: ${ineffective}`;
+      return `SOC 2 CONTROL STATUS\n\nIRM Sentinel implements 15 SOC 2 Trust Services controls:\n• Security (CC1-CC7): 8 controls — RBAC, SSO/MFA, encryption, SIEM, incident response\n• Availability (A1.1-A1.4): 4 controls — 99.9% SLA, DR plan, backups, environmental safeguards\n• Confidentiality (C1.1-C1.3): 3 controls — data classification, retention, tokenization\n\nImplementation: 13 of 15 implemented (87% readiness)\nPending: A1.3 (Backup & Recovery testing), C1.2 (Data Retention & Disposal)\n\nOverall Control Environment: ${controls.length} total controls across all frameworks\n• Effective: ${effective} | Partially Effective: ${partial} | Ineffective: ${ineffective}`;
     }
 
     // Top risks / risk summary
@@ -716,13 +732,13 @@ Management should prioritize control enhancements targeting the highest-impact r
       {
         patterns: [/\b(what is grc|what.?s grc|explain grc|grc mean|grc stand|define grc|grc definition|governance.+risk.+compliance)\b/],
         keywords: ['grc', 'governance risk compliance'],
-        response: "GRC stands for Governance, Risk, and Compliance — three interconnected disciplines that ensure an organization operates within its risk appetite while meeting regulatory obligations.\n\nGovernance defines the policies, decision-making structures, and accountability frameworks set by the Board and senior management. Risk Management identifies, assesses, monitors, and mitigates threats across credit, market, operational, cyber, and strategic domains. Compliance ensures adherence to laws, regulations, and internal policies — for banks, this includes OCC, FDIC, Federal Reserve, and SEC requirements.\n\nIRM Command integrates all three into a single platform: the Dashboard provides governance-level visibility, the Risk Register and Workbench handle risk assessment, and the Compliance module tracks regulatory obligations and control mappings."
+        response: "GRC stands for Governance, Risk, and Compliance — three interconnected disciplines that ensure an organization operates within its risk appetite while meeting regulatory obligations.\n\nGovernance defines the policies, decision-making structures, and accountability frameworks set by the Board and senior management. Risk Management identifies, assesses, monitors, and mitigates threats across credit, market, operational, cyber, and strategic domains. Compliance ensures adherence to laws, regulations, and internal policies — for banks, this includes OCC, FDIC, Federal Reserve, and SEC requirements.\n\nIRM Sentinel integrates all three into a single platform: the Dashboard provides governance-level visibility, the Risk Register and Workbench handle risk assessment, and the Compliance module tracks regulatory obligations and control mappings."
       },
       // IRM / platform identity
       {
         patterns: [/\b(what is irm|what.?s irm|expand irm|irm stand|irm mean|about irm|tell me about irm|what does irm)\b/],
         keywords: ['irm', 'integrated risk management', 'irm command', 'platform'],
-        response: "IRM stands for Integrated Risk Management. IRM Command is an enterprise GRC platform built for G-SIB and large banks — it brings together risk registers, control libraries, vendor oversight, compliance tracking, and AI-powered analytics into a single command center.\n\nThe platform covers eight risk domains (Credit, Market, Operational, Compliance, Cyber, Third-Party, Strategic, Liquidity), maps controls to regulatory frameworks (SOC 2, Basel III, NIST CSF, ISO 27001, SOX, GDPR, DORA), and provides AI-generated narratives calibrated to supervisory expectations from the OCC, FDIC, and Federal Reserve."
+        response: "IRM stands for Integrated Risk Management. IRM Sentinel is an enterprise GRC platform built for G-SIB and large banks — it brings together risk registers, control libraries, vendor oversight, compliance tracking, and AI-powered analytics into a single command center.\n\nThe platform covers eight risk domains (Credit, Market, Operational, Compliance, Cyber, Third-Party, Strategic, Liquidity), maps controls to regulatory frameworks (SOC 2, Basel III, NIST CSF, ISO 27001, SOX, GDPR, DORA), and provides AI-generated narratives calibrated to supervisory expectations from the OCC, FDIC, and Federal Reserve."
       },
       // Copilot usage / help
       {
@@ -741,7 +757,7 @@ Management should prioritize control enhancements targeting the highest-impact r
       {
         patterns: [/\b(risk appetite|risk tolerance|acceptable risk|how much risk|appetite statement)\b/],
         keywords: ['appetite', 'tolerance', 'acceptable risk'],
-        response: "Risk appetite is the level of risk your institution is willing to accept in pursuit of its objectives. It's set by the Board and Risk Committee, then quantified as thresholds for each risk category.\n\nIn IRM Command, risk appetite shows up as the scoring boundaries — when an inherent or residual risk score exceeds the appetite threshold (typically >4 on a 1-5 scale), it triggers escalation to the Risk Committee. The AI Workbench lets you model scenarios against these thresholds to test whether proposed activities fall within or outside your stated appetite."
+        response: "Risk appetite is the level of risk your institution is willing to accept in pursuit of its objectives. It's set by the Board and Risk Committee, then quantified as thresholds for each risk category.\n\nIn IRM Sentinel, risk appetite shows up as the scoring boundaries — when an inherent or residual risk score exceeds the appetite threshold (typically >4 on a 1-5 scale), it triggers escalation to the Risk Committee. The AI Workbench lets you model scenarios against these thresholds to test whether proposed activities fall within or outside your stated appetite."
       },
       // Inherent vs residual risk
       {
@@ -753,7 +769,7 @@ Management should prioritize control enhancements targeting the highest-impact r
       {
         patterns: [/\b(risk categor|types of risk|risk type|operational risk|credit risk|market risk|cyber risk|strategic risk|liquidity risk|what risks)\b/],
         keywords: ['risk category', 'risk type', 'operational', 'credit', 'market', 'cyber', 'strategic', 'liquidity'],
-        response: "IRM Command tracks eight standard risk categories aligned with OCC and Basel supervisory guidance:\n\nCredit Risk — potential loss from borrower or counterparty default.\nMarket Risk — exposure to adverse movements in interest rates, FX, equities, or commodities.\nOperational Risk — loss from failed processes, people, systems, or external events.\nCompliance Risk — violations of laws, regulations, or internal policies.\nCyber Risk — threats to information security, data integrity, and system availability.\nThird-Party Risk — exposure from vendors, outsourcing, and supply chain dependencies.\nStrategic Risk — threats to business model viability, competitive position, or capital planning.\nLiquidity Risk — inability to meet short-term obligations without significant loss.\n\nEach risk in the register is categorized and scored for both inherent and residual exposure."
+        response: "IRM Sentinel tracks eight standard risk categories aligned with OCC and Basel supervisory guidance:\n\nCredit Risk — potential loss from borrower or counterparty default.\nMarket Risk — exposure to adverse movements in interest rates, FX, equities, or commodities.\nOperational Risk — loss from failed processes, people, systems, or external events.\nCompliance Risk — violations of laws, regulations, or internal policies.\nCyber Risk — threats to information security, data integrity, and system availability.\nThird-Party Risk — exposure from vendors, outsourcing, and supply chain dependencies.\nStrategic Risk — threats to business model viability, competitive position, or capital planning.\nLiquidity Risk — inability to meet short-term obligations without significant loss.\n\nEach risk in the register is categorized and scored for both inherent and residual exposure."
       },
       // Loss event
       {
@@ -784,7 +800,7 @@ Management should prioritize control enhancements targeting the highest-impact r
       {
         patterns: [/\b(compliance|regulatory change|regulation|regulatory|sox|gdpr|nist|basel|iso 27001|framework|dora|coso)\b/],
         keywords: ['compliance', 'regulatory', 'framework', 'sox', 'gdpr', 'nist', 'basel', 'iso', 'dora', 'coso'],
-        response: "IRM Command maps controls to major regulatory frameworks: SOC 2 Type II, Basel III/IV, NIST CSF 2.0, ISO 27001:2022, COSO ERM, SOX, GDPR, and DORA.\n\nThe Compliance module tracks regulatory changes by source (OCC, FDIC, Federal Reserve, SEC, etc.), assesses their impact, and links them to your existing controls and frameworks. When a new regulation drops, you can trace exactly which controls need updating.\n\nCheck the Compliance page to see your current compliance posture and any gaps."
+        response: "IRM Sentinel maps controls to major regulatory frameworks: SOC 2 Type II, Basel III/IV, NIST CSF 2.0, ISO 27001:2022, COSO ERM, SOX, GDPR, and DORA.\n\nThe Compliance module tracks regulatory changes by source (OCC, FDIC, Federal Reserve, SEC, etc.), assesses their impact, and links them to your existing controls and frameworks. When a new regulation drops, you can trace exactly which controls need updating.\n\nCheck the Compliance page to see your current compliance posture and any gaps."
       },
       // MRA / MRIA / findings
       {
@@ -796,7 +812,7 @@ Management should prioritize control enhancements targeting the highest-impact r
       {
         patterns: [/\b(three lines|3 lines|lines of defense|first line|second line|third line|1st line|2nd line|3rd line)\b/],
         keywords: ['three lines', 'lines of defense', 'first line', 'second line'],
-        response: "The Three Lines of Defense model is the standard governance framework for risk management in financial institutions:\n\nFirst Line — Business units and operational management. They own and manage risk day-to-day, execute controls, and escalate issues. In IRM Command, these are the risk and control owners assigned to each item.\n\nSecond Line — Risk Management and Compliance functions. They set policy, provide oversight, challenge the first line, and monitor KRIs. The Dashboard and Compliance modules support this function.\n\nThird Line — Internal Audit. They provide independent assurance that the first and second lines are operating effectively. Audit findings flow into the Exceptions module as MRAs/MRIAs.\n\nRegulators like the OCC expect clear separation between these lines."
+        response: "The Three Lines of Defense model is the standard governance framework for risk management in financial institutions:\n\nFirst Line — Business units and operational management. They own and manage risk day-to-day, execute controls, and escalate issues. In IRM Sentinel, these are the risk and control owners assigned to each item.\n\nSecond Line — Risk Management and Compliance functions. They set policy, provide oversight, challenge the first line, and monitor KRIs. The Dashboard and Compliance modules support this function.\n\nThird Line — Internal Audit. They provide independent assurance that the first and second lines are operating effectively. Audit findings flow into the Exceptions module as MRAs/MRIAs.\n\nRegulators like the OCC expect clear separation between these lines."
       },
       // ===== THIRD-PARTY RISK =====
       // Vendor / TPRM
@@ -809,39 +825,39 @@ Management should prioritize control enhancements targeting the highest-impact r
       {
         patterns: [/\b(sla|service level|uptime|availability|performance metric)\b/],
         keywords: ['sla', 'service level', 'uptime', 'availability'],
-        response: "Service Level Agreements (SLAs) define contracted performance standards between your institution and its vendors. IRM Command tracks SLA status with a traffic-light system:\n\nGreen — vendor consistently meets all SLA commitments.\nYellow — marginal performance, at-risk of breaching.\nRed — contracted performance not met, requires remediation or escalation.\n\nSLA monitoring covers uptime, response times, incident resolution, and data processing commitments. Vendors in Red status trigger alerts and may require management action plans or contract re-negotiation."
+        response: "Service Level Agreements (SLAs) define contracted performance standards between your institution and its vendors. IRM Sentinel tracks SLA status with a traffic-light system:\n\nGreen — vendor consistently meets all SLA commitments.\nYellow — marginal performance, at-risk of breaching.\nRed — contracted performance not met, requires remediation or escalation.\n\nSLA monitoring covers uptime, response times, incident resolution, and data processing commitments. Vendors in Red status trigger alerts and may require management action plans or contract re-negotiation."
       },
       // ===== EXAM & SUPERVISORY =====
       // Exam / examiner / ROE
       {
         patterns: [/\b(exam|examiner|roe|report of examination|occ|fdic|supervisory|regulator visit)\b/],
         keywords: ['exam', 'examiner', 'roe', 'occ', 'fdic', 'supervisory'],
-        response: "IRM Command can generate OCC/FDIC-style Report of Examination (ROE) narratives. The Examiner View compiles your risk profile, control environment assessment, management findings status, and KRI metrics into a supervisory-ready narrative.\n\nThis is especially useful for exam preparation — you can preview what regulators would see and identify gaps before they do. The AI Command Center's quick actions include \"Draft Exam Response\" which produces a narrative calibrated to supervisory language and expectations."
+        response: "IRM Sentinel can generate OCC/FDIC-style Report of Examination (ROE) narratives. The Examiner View compiles your risk profile, control environment assessment, management findings status, and KRI metrics into a supervisory-ready narrative.\n\nThis is especially useful for exam preparation — you can preview what regulators would see and identify gaps before they do. The AI Command Center's quick actions include \"Draft Exam Response\" which produces a narrative calibrated to supervisory language and expectations."
       },
       // CAMELS
       {
         patterns: [/\b(camels|camel rating|composite rating|safety.+soundness)\b/],
         keywords: ['camels', 'composite rating', 'safety soundness'],
-        response: "CAMELS is the supervisory rating system used by U.S. banking regulators (OCC, FDIC, Federal Reserve) to assess a bank's overall condition. Each component is rated 1 (strong) to 5 (critically deficient):\n\nC — Capital adequacy\nA — Asset quality\nM — Management capability\nE — Earnings quality\nL — Liquidity position\nS — Sensitivity to market risk\n\nIRM Command's risk data maps to several CAMELS dimensions: the risk register informs Asset quality and Sensitivity, the control environment reflects Management capability, and loss events tie to Earnings and Capital. A composite rating of 1-2 is considered satisfactory; 3 indicates concerns; 4-5 is unsatisfactory."
+        response: "CAMELS is the supervisory rating system used by U.S. banking regulators (OCC, FDIC, Federal Reserve) to assess a bank's overall condition. Each component is rated 1 (strong) to 5 (critically deficient):\n\nC — Capital adequacy\nA — Asset quality\nM — Management capability\nE — Earnings quality\nL — Liquidity position\nS — Sensitivity to market risk\n\nIRM Sentinel's risk data maps to several CAMELS dimensions: the risk register informs Asset quality and Sensitivity, the control environment reflects Management capability, and loss events tie to Earnings and Capital. A composite rating of 1-2 is considered satisfactory; 3 indicates concerns; 4-5 is unsatisfactory."
       },
       // ===== OPERATIONAL RESILIENCE =====
       {
         patterns: [/\b(operational resilience|business continuity|disaster recovery|bcp|drp|rto|rpo)\b/],
         keywords: ['resilience', 'continuity', 'disaster recovery', 'bcp', 'drp'],
-        response: "Operational resilience is the ability of an institution to deliver critical operations through disruption. It goes beyond traditional BCP/DR by focusing on the end-to-end delivery of important business services.\n\nKey concepts: Recovery Time Objective (RTO) — maximum acceptable downtime. Recovery Point Objective (RPO) — maximum acceptable data loss. Impact Tolerance — the maximum disruption a service can absorb before causing intolerable harm.\n\nIRM Command tracks resilience through vendor BCP assessments, control testing for availability controls, and monitoring alerts for service disruptions. The TPRM module specifically evaluates vendor resilience posture."
+        response: "Operational resilience is the ability of an institution to deliver critical operations through disruption. It goes beyond traditional BCP/DR by focusing on the end-to-end delivery of important business services.\n\nKey concepts: Recovery Time Objective (RTO) — maximum acceptable downtime. Recovery Point Objective (RPO) — maximum acceptable data loss. Impact Tolerance — the maximum disruption a service can absorb before causing intolerable harm.\n\nIRM Sentinel tracks resilience through vendor BCP assessments, control testing for availability controls, and monitoring alerts for service disruptions. The TPRM module specifically evaluates vendor resilience posture."
       },
       // ===== AI & PLATFORM =====
       // Architecture / tech stack
       {
         patterns: [/\b(architecture|tech stack|built with|technology|how is it built|what tech)\b/],
         keywords: ['architecture', 'tech stack', 'technology'],
-        response: "IRM Command is built on a modern enterprise stack:\n\nFrontend — React 18, TypeScript, Vite 5, Tailwind CSS.\nState Management — Zustand for client state.\nData Layer — Supabase (PostgreSQL) with Row Level Security and tenant isolation.\nAI Engine — Multi-LLM routing (Claude, GPT-4, Groq) with MCP tool registry and RAG knowledge base, governed by an AI governance framework with prompt injection detection and data classification.\nDeployment — Vercel Edge Network with global CDN.\nSecurity — RBAC engine, JWT verification with JWKS, audit logging, enterprise SSO support, Zod input validation.\n\nSee the Architecture page for full TOGAF ADM phases, diagrams, and the integration catalog."
+        response: "IRM Sentinel is built on a modern enterprise stack:\n\nFrontend — React 18, TypeScript, Vite 5, Tailwind CSS.\nState Management — Zustand for client state.\nData Layer — Supabase (PostgreSQL) with Row Level Security and tenant isolation.\nAI Engine — Multi-LLM routing (Claude, GPT-4, Groq) with MCP tool registry and RAG knowledge base, governed by an AI governance framework with prompt injection detection and data classification.\nDeployment — Vercel Edge Network with global CDN.\nSecurity — RBAC engine, JWT verification with JWKS, audit logging, enterprise SSO support, Zod input validation.\n\nSee the Architecture page for full TOGAF ADM phases, diagrams, and the integration catalog."
       },
       // AI governance
       {
         patterns: [/\b(ai governance|ai risk|model risk|ai policy|responsible ai|llm risk|ai safety)\b/],
         keywords: ['ai governance', 'model risk', 'responsible ai', 'ai safety'],
-        response: "AI Governance ensures that AI/ML systems operate within defined risk parameters. IRM Command's AI governance framework includes:\n\nPre-flight validation — every AI request is checked for prompt injection, PII leakage, and data classification before processing.\nProvider routing — queries are routed to appropriate LLM providers based on complexity and data sensitivity.\nOutput validation — AI responses are reviewed for hallucination indicators and compliance with institutional policies.\nAudit trail — all AI interactions are logged for regulatory examination.\n\nThis aligns with the OCC's guidance on model risk management (SR 11-7) and emerging AI-specific regulatory expectations from the Federal Reserve and FDIC."
+        response: "AI Governance ensures that AI/ML systems operate within defined risk parameters. IRM Sentinel's AI governance framework includes:\n\nPre-flight validation — every AI request is checked for prompt injection, PII leakage, and data classification before processing.\nProvider routing — queries are routed to appropriate LLM providers based on complexity and data sensitivity.\nOutput validation — AI responses are reviewed for hallucination indicators and compliance with institutional policies.\nAudit trail — all AI interactions are logged for regulatory examination.\n\nThis aligns with the OCC's guidance on model risk management (SR 11-7) and emerging AI-specific regulatory expectations from the Federal Reserve and FDIC."
       },
       // Create a risk
       {
@@ -853,31 +869,31 @@ Management should prioritize control enhancements targeting the highest-impact r
       {
         patterns: [/\b(rcsa|risk.+control.+self.+assessment|self assessment)\b/],
         keywords: ['rcsa', 'self assessment'],
-        response: "RCSA (Risk and Control Self-Assessment) is a process where business units identify and evaluate their own risks and the effectiveness of controls mitigating those risks. It's a first-line-of-defense activity that feeds into the enterprise risk register.\n\nIn a typical RCSA cycle: business units document processes, identify risk events, assess inherent risk, map existing controls, rate control effectiveness, and calculate residual risk. IRM Command's AI Workbench can model RCSA scenarios by letting you select business line, risk type, and control parameters to generate composite risk scores."
+        response: "RCSA (Risk and Control Self-Assessment) is a process where business units identify and evaluate their own risks and the effectiveness of controls mitigating those risks. It's a first-line-of-defense activity that feeds into the enterprise risk register.\n\nIn a typical RCSA cycle: business units document processes, identify risk events, assess inherent risk, map existing controls, rate control effectiveness, and calculate residual risk. IRM Sentinel's AI Workbench can model RCSA scenarios by letting you select business line, risk type, and control parameters to generate composite risk scores."
       },
       // Stress testing / scenario analysis
       {
         patterns: [/\b(stress test|scenario analysis|what.?if|monte carlo|sensitivity analysis|capital stress)\b/],
         keywords: ['stress test', 'scenario', 'what if', 'sensitivity'],
-        response: "Scenario analysis and stress testing evaluate how adverse conditions affect your risk profile. The AI Workbench in IRM Command lets you model risk scenarios by configuring:\n\nBusiness line, product, geography, and risk type.\nInherent risk level and control strength.\nHistorical loss data.\n\nThe engine calculates a composite risk score using a weighted model: InherentRisk (30%) + ControlGap (25%) + LossHistory (15%) + BusinessComplexity (10%) + RegulatoryFactor (10%) + AdditionalFactors (10%). Pre-built scenarios are available for common risk events. Results include a residual risk rating and AI-generated narrative."
+        response: "Scenario analysis and stress testing evaluate how adverse conditions affect your risk profile. The AI Workbench in IRM Sentinel lets you model risk scenarios by configuring:\n\nBusiness line, product, geography, and risk type.\nInherent risk level and control strength.\nHistorical loss data.\n\nThe engine calculates a composite risk score using a weighted model: InherentRisk (30%) + ControlGap (25%) + LossHistory (15%) + BusinessComplexity (10%) + RegulatoryFactor (10%) + AdditionalFactors (10%). Pre-built scenarios are available for common risk events. Results include a residual risk rating and AI-generated narrative."
       },
       // Concentration risk
       {
         patterns: [/\b(concentration risk|single.+exposure|diversif|portfolio.+concentration)\b/],
         keywords: ['concentration', 'single exposure', 'diversification'],
-        response: "Concentration risk arises when an institution has excessive exposure to a single counterparty, sector, geography, or risk factor. Regulators flag concentration when:\n\nA single vendor or counterparty represents a disproportionate share of critical operations.\nRisk is concentrated in one category or business line.\nGeographic exposure is undiversified.\n\nIRM Command's Dashboard heat map and risk distribution charts help identify concentration. The TPRM module flags vendor concentration (multiple critical services from one provider), and the risk register highlights category concentrations."
+        response: "Concentration risk arises when an institution has excessive exposure to a single counterparty, sector, geography, or risk factor. Regulators flag concentration when:\n\nA single vendor or counterparty represents a disproportionate share of critical operations.\nRisk is concentrated in one category or business line.\nGeographic exposure is undiversified.\n\nIRM Sentinel's Dashboard heat map and risk distribution charts help identify concentration. The TPRM module flags vendor concentration (multiple critical services from one provider), and the risk register highlights category concentrations."
       },
       // Incident response
       {
         patterns: [/\b(incident response|incident management|security incident|breach response|cyber incident|containment)\b/],
         keywords: ['incident response', 'incident management', 'security incident', 'breach'],
-        response: "Incident response is the structured process for detecting, containing, eradicating, and recovering from security events. IRM Command documents incident response procedures aligned with NIST SP 800-61:\n\nSeverity classification — Critical (P1, 15-min response SLA), High (P2, 1-hour), Medium (P3, 4-hour), Low (P4, 24-hour).\nContainment steps — network isolation, credential rotation, evidence preservation.\nEscalation paths — SOC to CISO to Risk Committee to Board for critical incidents.\nRegulatory notification — OCC, FDIC, and law enforcement timelines.\n\nThe monitoring alerts in the Dashboard track active incidents and their resolution status."
+        response: "Incident response is the structured process for detecting, containing, eradicating, and recovering from security events. IRM Sentinel documents incident response procedures aligned with NIST SP 800-61:\n\nSeverity classification — Critical (P1, 15-min response SLA), High (P2, 1-hour), Medium (P3, 4-hour), Low (P4, 24-hour).\nContainment steps — network isolation, credential rotation, evidence preservation.\nEscalation paths — SOC to CISO to Risk Committee to Board for critical incidents.\nRegulatory notification — OCC, FDIC, and law enforcement timelines.\n\nThe monitoring alerts in the Dashboard track active incidents and their resolution status."
       },
       // Data classification
       {
         patterns: [/\b(data classif|data sensitiv|pii|personal data|confidential data|data protect|data privacy)\b/],
         keywords: ['data classification', 'pii', 'personal data', 'confidential', 'data protection'],
-        response: "Data classification assigns sensitivity levels to information assets to ensure appropriate handling and protection. Standard classification tiers:\n\nPublic — no restrictions on disclosure.\nInternal — for authorized personnel only, no external sharing.\nConfidential — restricted access, encryption required at rest and in transit.\nRestricted/PII — personally identifiable information subject to regulatory requirements (GDPR, CCPA, GLBA).\n\nIRM Command's AI governance layer automatically classifies data in AI requests and strips PII before processing. The security controls framework includes data protection controls mapped to NIST and ISO 27001."
+        response: "Data classification assigns sensitivity levels to information assets to ensure appropriate handling and protection. Standard classification tiers:\n\nPublic — no restrictions on disclosure.\nInternal — for authorized personnel only, no external sharing.\nConfidential — restricted access, encryption required at rest and in transit.\nRestricted/PII — personally identifiable information subject to regulatory requirements (GDPR, CCPA, GLBA).\n\nIRM Sentinel's AI governance layer automatically classifies data in AI requests and strips PII before processing. The security controls framework includes data protection controls mapped to NIST and ISO 27001."
       },
       // Audit trail
       {
@@ -889,7 +905,7 @@ Management should prioritize control enhancements targeting the highest-impact r
       {
         patterns: [/\b(rbac|role.?based|permission|access control|who can|user role|authorization)\b/],
         keywords: ['rbac', 'role based', 'permission', 'access control'],
-        response: "IRM Command uses Role-Based Access Control (RBAC) to enforce least-privilege access. Pre-defined roles include:\n\nCRO (Chief Risk Officer) — full read/write access across all modules, workbench execution, AI copilot interaction.\nRisk Manager — risk register and control management.\nCompliance Officer — compliance module and regulatory change management.\nAuditor — read-only access across all modules for examination purposes.\nViewer — dashboard and reporting access only.\n\nEach role has specific permissions (e.g., workbench:execute, risks:write, compliance:manage). Permissions are enforced at the UI component level and validated server-side."
+        response: "IRM Sentinel uses Role-Based Access Control (RBAC) to enforce least-privilege access. Pre-defined roles include:\n\nCRO (Chief Risk Officer) — full read/write access across all modules, workbench execution, AI copilot interaction.\nRisk Manager — risk register and control management.\nCompliance Officer — compliance module and regulatory change management.\nAuditor — read-only access across all modules for examination purposes.\nViewer — dashboard and reporting access only.\n\nEach role has specific permissions (e.g., workbench:execute, risks:write, compliance:manage). Permissions are enforced at the UI component level and validated server-side."
       },
     ];
 

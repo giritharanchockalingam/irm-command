@@ -2,9 +2,9 @@
 
 ## Vulnerability Reporting
 
-We take security seriously. If you discover a security vulnerability in the IRM Command project, please report it responsibly to our security team.
+We take security seriously. If you discover a security vulnerability in the IRM Sentinel project, please report it responsibly to our security team.
 
-**Report Security Issues To:** security@irmcommand.io
+**Report Security Issues To:** security@irmsentinel.io
 
 Please do not open public issues or pull requests for security vulnerabilities. Instead, email the security team with:
 - Description of the vulnerability
@@ -25,9 +25,9 @@ We are committed to responding to security reports promptly:
 
 ## Scope
 
-This security policy covers the following components of the IRM Command project:
+This security policy covers the following components of the IRM Sentinel project:
 
-- **Web Application:** The IRM Command frontend application and all user-facing features
+- **Web Application:** The IRM Sentinel frontend application and all user-facing features
 - **API:** All backend APIs and services
 - **Authentication:** Login mechanisms, session management, MFA, and authorization
 - **Data Handling:** Data processing, storage, encryption, and transmission

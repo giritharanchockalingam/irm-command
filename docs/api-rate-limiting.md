@@ -1,4 +1,4 @@
-# IRM Command — API Rate Limiting Strategy
+# IRM Sentinel — API Rate Limiting Strategy
 
 **Version:** 1.0
 **Last Updated:** 2026-03-25
@@ -7,7 +7,7 @@
 
 ## Purpose
 
-This document defines the API rate limiting strategy for IRM Command to prevent abuse, ensure fair resource allocation, and maintain system stability. Rate limits are enforced at both the application layer (via `RateLimiter.ts`) and the Edge Function layer for defense-in-depth protection.
+This document defines the API rate limiting strategy for IRM Sentinel to prevent abuse, ensure fair resource allocation, and maintain system stability. Rate limits are enforced at both the application layer (via `RateLimiter.ts`) and the Edge Function layer for defense-in-depth protection.
 
 ---
 

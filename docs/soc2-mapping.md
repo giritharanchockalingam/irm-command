@@ -1,13 +1,13 @@
 # SOC 2 Trust Services Criteria Mapping
 
-**IRM Command** - Enterprise GRC SaaS Platform
+**IRM Sentinel** - Enterprise GRC SaaS Platform
 **Document Version**: 1.0
 **Last Updated**: 2026-03-24
 **Status**: Active
 
 ## Executive Summary
 
-This document maps IRM Command's architecture and operational controls to the AICPA SOC 2 Trust Services Criteria (CC: Common Criteria, A: Availability, C: Confidentiality). The platform is designed to achieve SOC 2 Type II certification within 18 months of general availability.
+This document maps IRM Sentinel's architecture and operational controls to the AICPA SOC 2 Trust Services Criteria (CC: Common Criteria, A: Availability, C: Confidentiality). The platform is designed to achieve SOC 2 Type II certification within 18 months of general availability.
 
 ---
 
@@ -232,6 +232,6 @@ function maskPII(value: string, fieldType: 'email' | 'phone' | 'ssn'): string {
 
 ## 7. Compliance Assertion
 
-IRM Command implements the core controls required for SOC 2 Type II certification across Security, Availability, and Confidentiality trust services. Formal audit is scheduled for Q4 2026 following 18 months of operational history.
+IRM Sentinel implements the core controls required for SOC 2 Type II certification across Security, Availability, and Confidentiality trust services. Formal audit is scheduled for Q4 2026 following 18 months of operational history.
 
 **Next Review**: 2026-06-24

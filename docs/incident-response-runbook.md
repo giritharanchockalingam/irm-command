@@ -1,4 +1,4 @@
-# IRM Command — Incident Response Runbook
+# IRM Sentinel — Incident Response Runbook
 
 **Version:** 1.0
 **Last Updated:** 2026-03-25
@@ -7,7 +7,7 @@
 
 ## Purpose
 
-This runbook provides step-by-step procedures for the SOC team to respond to, contain, and recover from security incidents affecting the IRM Command platform. It covers detection, classification, escalation, evidence collection, containment, and post-incident review activities.
+This runbook provides step-by-step procedures for the SOC team to respond to, contain, and recover from security incidents affecting the IRM Sentinel platform. It covers detection, classification, escalation, evidence collection, containment, and post-incident review activities.
 
 ---
 
@@ -405,7 +405,7 @@ curl -X GET "https://project.supabase.co/functions/v1/siem-forwarder" \
 ### 7.1 Internal Security Notification
 
 **To:** Security team, CISO, department leads
-**Subject:** [INCIDENT] Security Incident Detected - IRM Command
+**Subject:** [INCIDENT] Security Incident Detected - IRM Sentinel
 
 **Template:**
 
@@ -480,7 +480,7 @@ ATTENDEES: CISO, Legal, Compliance, Security Lead
 ### 7.3 Customer Notification (if breach confirmed)
 
 **To:** Affected customers via email + support portal
-**Subject:** Security Incident Notification - IRM Command
+**Subject:** Security Incident Notification - IRM Sentinel
 
 **Template:**
 
@@ -488,7 +488,7 @@ ATTENDEES: CISO, Legal, Compliance, Security Lead
 Dear Customer,
 
 We are writing to inform you of a security incident that may have affected
-your data in the IRM Command platform.
+your data in the IRM Sentinel platform.
 
 WHAT HAPPENED:
 On March 25, 2026 at 10:15 UTC, we detected unauthorized access to vendor
@@ -509,7 +509,7 @@ WHAT WE'RE DOING:
 4. Review of access control procedures (in progress)
 
 WHAT YOU SHOULD DO:
-1. Change your IRM Command password (recommended)
+1. Change your IRM Sentinel password (recommended)
 2. Review vendor assessment data for any unauthorized modifications
 3. Contact us if you have questions: security@irmcommand.io
 
@@ -523,7 +523,7 @@ We take security seriously and apologize for this incident. We are committed
 to transparency and continuous improvement.
 
 Sincerely,
-IRM Command Security Team
+IRM Sentinel Security Team
 ```
 
 ---

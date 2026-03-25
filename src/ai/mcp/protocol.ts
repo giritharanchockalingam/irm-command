@@ -1,6 +1,6 @@
 /**
  * MCP Protocol Base Classes & Interfaces
- * Client-side implementation for IRM Command GRC platform
+ * Client-side implementation for IRM Sentinel GRC platform
  * Adapted from supply-chain-platform
  */
 

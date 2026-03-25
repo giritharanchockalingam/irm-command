@@ -1,4 +1,4 @@
-# Operations Readiness – IRM Command
+# Operations Readiness – IRM Sentinel
 
 Deployment, monitoring, integration, and runbook guide for operations teams.
 
@@ -22,7 +22,7 @@ Deployment, monitoring, integration, and runbook guide for operations teams.
 ┌─────────────────────────────────┐
 │   Static Hosting (Vercel, etc)  │
 ├─────────────────────────────────┤
-│  IRM Command SPA Bundle         │
+│  IRM Sentinel SPA Bundle         │
 │  (React + Vite + Zustand)       │
 │  • Theme (localStorage)         │
 │  • Audit logs (localStorage)    │
@@ -170,7 +170,7 @@ import { useOidc } from '@react-oidc/core'; // or similar library
 export function OIDCSecurityContext({ children }) {
   const { oidcUser, logout } = useOidc();
 
-  // Map OIDC claims to IRM Command roles
+  // Map OIDC claims to IRM Sentinel roles
   function mapOIDCToRole(groups: string[]): Role {
     if (groups.includes('irm-admin')) return 'admin';
     if (groups.includes('irm-manager')) return 'manager';
@@ -302,9 +302,9 @@ interface HealthResponse {
 ```yaml
 # High Error Rate (P1)
 monitor:
-  name: "IRM Command - High Error Rate (P1)"
+  name: "IRM Sentinel - High Error Rate (P1)"
   type: "metric alert"
-  query: "avg(last_5m):avg:trace.web.request.errors{service:irm-command} > 0.05"
+  query: "avg(last_5m):avg:trace.web.request.errors{service:irm-sentinel} > 0.05"
   thresholds:
     critical: 0.05
     warning: 0.01
@@ -313,9 +313,9 @@ monitor:
 
 # AI Latency SLA Miss
 monitor:
-  name: "IRM Command - AI Latency SLA Miss"
+  name: "IRM Sentinel - AI Latency SLA Miss"
   type: "metric alert"
-  query: "p95(last_1m):trace.ai.generation.duration{service:irm-command} > 2000"
+  query: "p95(last_1m):trace.ai.generation.duration{service:irm-sentinel} > 2000"
   thresholds:
     critical: 2000
   notification_channels:

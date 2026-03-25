@@ -1,13 +1,13 @@
 # Change Management Policy
 
-**IRM Command** - Enterprise GRC SaaS Platform
+**IRM Sentinel** - Enterprise GRC SaaS Platform
 **Document Version**: 1.0
 **Last Updated**: 2026-03-24
 **Status**: Active
 
 ## 1. Introduction
 
-This policy defines how IRM Command manages changes to infrastructure, application code, configurations, and data models. The goal is to minimize risk while maintaining deployment velocity for critical security updates.
+This policy defines how IRM Sentinel manages changes to infrastructure, application code, configurations, and data models. The goal is to minimize risk while maintaining deployment velocity for critical security updates.
 
 ---
 

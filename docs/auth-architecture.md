@@ -1,13 +1,13 @@
 # Authentication & Authorization Architecture
 
-**IRM Command** - Enterprise GRC SaaS Platform
+**IRM Sentinel** - Enterprise GRC SaaS Platform
 **Document Version**: 1.0
 **Last Updated**: 2026-03-24
 **Status**: Active
 
 ## 1. Executive Summary
 
-IRM Command implements a modern, enterprise-grade authentication architecture built on OpenID Connect (OIDC) as the primary protocol, with optional SAML support for legacy enterprise deployments. All users authenticate via their organization's identity provider (Okta, Entra ID / Azure AD, Google Workspace, etc.) using multi-factor authentication (MFA), with role-based access control (RBAC) enforced consistently across frontend and backend.
+IRM Sentinel implements a modern, enterprise-grade authentication architecture built on OpenID Connect (OIDC) as the primary protocol, with optional SAML support for legacy enterprise deployments. All users authenticate via their organization's identity provider (Okta, Entra ID / Azure AD, Google Workspace, etc.) using multi-factor authentication (MFA), with role-based access control (RBAC) enforced consistently across frontend and backend.
 
 ---
 
@@ -29,7 +29,7 @@ IRM Command implements a modern, enterprise-grade authentication architecture bu
          │
          ▼
 ┌──────────────────────────────────────┐
-│   IRM Command Frontend (React)       │
+│   IRM Sentinel Frontend (React)       │
 │  ┌────────────────────────────────┐  │
 │  │  AuthClient Interface          │  │
 │  │  • DemoAuthClient (dev)        │  │
@@ -50,7 +50,7 @@ IRM Command implements a modern, enterprise-grade authentication architecture bu
            │
            ▼
 ┌──────────────────────────────────────┐
-│   IRM Command API (Node.js)          │
+│   IRM Sentinel API (Node.js)          │
 │  ┌────────────────────────────────┐  │
 │  │  JWT Validation Middleware     │  │
 │  │  • Verify JWT signature (JWKS) │  │
@@ -79,7 +79,7 @@ IRM Command implements a modern, enterprise-grade authentication architecture bu
 
 ### 3.1 SP-Initiated SSO (Recommended)
 
-User starts at IRM Command; IRM initiates authentication with customer's IdP.
+User starts at IRM Sentinel; IRM initiates authentication with customer's IdP.
 
 ```
 User Browser          IRM Frontend       IRM API            Customer's IdP
@@ -194,12 +194,12 @@ class OIDCAuthClient implements AuthClient {
 
 ### 3.2 IdP-Initiated SSO (Optional)
 
-User starts at customer's IdP (e.g., Okta dashboard); clicks IRM Command app tile.
+User starts at customer's IdP (e.g., Okta dashboard); clicks IRM Sentinel app tile.
 
 ```
 User Browser          Customer's IdP      IRM Frontend       IRM API
     │                      │                   │                  │
-    ├─ Click "IRM Command"─>│                  │                  │
+    ├─ Click "IRM Sentinel"─>│                  │                  │
     │  app tile            │                   │                  │
     │                      ├─ POST /callback (SAML assertion)────>│
     │  (IdP initiates)     │   <samlResponse>  │                  │
@@ -289,7 +289,7 @@ interface IdToken {
 
 ## 5. Multi-Factor Authentication (MFA)
 
-**Policy**: MFA is **mandatory for all users** of IRM Command.
+**Policy**: MFA is **mandatory for all users** of IRM Sentinel.
 
 ### MFA Enforcement
 1. **Primary Enforcement**: At customer's IdP level (Okta, Entra ID, Google)
@@ -306,7 +306,7 @@ function validateMFA(idToken: DecodedIdToken): boolean {
 ```
 
 ### Step-Up MFA for High-Risk Actions
-Certain actions require additional MFA challenge in IRM Command frontend, even if user already authenticated:
+Certain actions require additional MFA challenge in IRM Sentinel frontend, even if user already authenticated:
 
 **High-Risk Actions** (require step-up MFA):
 - `admin:settings` - Change global configuration
@@ -346,7 +346,7 @@ POST /api/auth/mfa-challenge
 
 ## 6. SCIM Provisioning
 
-**Purpose**: Automatically sync users and groups from customer's IdP to IRM Command.
+**Purpose**: Automatically sync users and groups from customer's IdP to IRM Sentinel.
 
 ### SCIM Features
 - **User Provisioning**: Auto-create IRM user when hired in Okta/Entra
@@ -644,7 +644,7 @@ OIDC_REDIRECT_URI=https://irm.company.com/auth/callback
 - **Token Rotation**: Refresh token rotated on each use; old token revoked
 - **No Token Logging**: Access tokens never logged; only masked in traces
 - **Per-Tenant IdP Config**: Each tenant can configure their own IdP URL (Okta, Entra, etc.)
-- **CORS**: Restricted to known IRM Command domains only
+- **CORS**: Restricted to known IRM Sentinel domains only
 
 ---
 

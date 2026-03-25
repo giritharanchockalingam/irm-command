@@ -1,14 +1,14 @@
 #!/bin/bash
 # ============================================================
-# IRM Command — One-click deploy to GitHub + Vercel
-# Run this from the irm-command project directory:
+# IRM Sentinel — One-click deploy to GitHub + Vercel
+# Run this from the irm-sentinel project directory:
 #   cd "/path/to/ACL Digital/irm-command"
 #   chmod +x DEPLOY.sh && ./DEPLOY.sh
 # ============================================================
 
 set -e
 
-echo "🚀 IRM Command Deployment Script"
+echo "🚀 IRM Sentinel Deployment Script"
 echo "================================="
 
 # Step 1: Initialize git (if not already)
@@ -23,7 +23,7 @@ fi
 # Step 2: Set remote (if not already)
 if ! git remote | grep -q origin; then
   echo "🔗 Adding GitHub remote..."
-  git remote add origin https://github.com/giritharanchockalingam/irm-command.git
+  git remote add origin https://github.com/giritharanchockalingam/irm-sentinel.git
 else
   echo "🔗 Remote 'origin' already set."
 fi
@@ -34,7 +34,7 @@ git add -A
 
 # Step 4: Commit
 echo "💾 Committing..."
-git commit -m "feat: IRM Command with Supabase integration and full GRC platform
+git commit -m "feat: IRM Sentinel with Supabase integration and full GRC platform
 
 - React 18 + TypeScript + Vite + Tailwind CSS
 - Zustand state management with dark/light mode

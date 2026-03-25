@@ -1,6 +1,6 @@
 /**
  * Client-side LLM Provider Abstraction with Circuit Breaker
- * Adapted for browser-only operation (IRM Command)
+ * Adapted for browser-only operation (IRM Sentinel)
  * Routes to appropriate provider based on complexity, with graceful fallback to local TemplateEngine
  */
 

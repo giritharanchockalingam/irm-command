@@ -85,7 +85,7 @@ const rules: ValidationRule[] = [
 ];
 
 // Run validation
-console.log(`\n🔒 IRM Command — Build-Time Security Validation`);
+console.log(`\n🔒 IRM Sentinel — Build-Time Security Validation`);
 console.log(`   Target environment: ${targetEnv}`);
 console.log(`   Production mode: ${isProduction ? 'YES' : 'no'}\n`);
 

@@ -1,4 +1,4 @@
-# IRM Command – Integrated Risk Management Platform
+# IRM Sentinel – Integrated Risk Management Platform
 
 Enterprise AI-powered GRC console prototype for G-SIB banks. 100% browser-only with deterministic AI narratives calibrated to OCC/FDIC/Basel III supervisory tone.
 

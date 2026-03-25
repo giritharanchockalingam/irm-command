@@ -15,7 +15,7 @@ export interface AICallContext {
   timestamp: Date;
 }
 
-// AI client interface - the boundary between IRM Command and the AI layer
+// AI client interface - the boundary between IRM Sentinel and the AI layer
 export interface AIGovernanceClient {
   generateDailyDigest(
     context: AICallContext,

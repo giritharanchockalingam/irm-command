@@ -1,9 +1,9 @@
-# IRM Command Security Policy
+# IRM Sentinel Security Policy
 # https://securitytxt.org/
 
-Contact: mailto:security@irmcommand.com
+Contact: mailto:security@irmsentinel.com
 Expires: 2027-03-25T00:00:00.000Z
 Preferred-Languages: en
-Canonical: https://irmcommand.com/.well-known/security.txt
-Policy: https://irmcommand.com/security-policy
-Acknowledgments: https://irmcommand.com/security-acknowledgments
+Canonical: https://irmsentinel.com/.well-known/security.txt
+Policy: https://irmsentinel.com/security-policy
+Acknowledgments: https://irmsentinel.com/security-acknowledgments

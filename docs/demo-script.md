@@ -1,8 +1,8 @@
-# IRM Command: Structured Demo Script
+# IRM Sentinel: Structured Demo Script
 
 ## Overview
 
-This document provides a comprehensive demo script for IRM Command, an enterprise AI-powered integrated risk management platform. The script is organized into five flows covering different user personas and use cases.
+This document provides a comprehensive demo script for IRM Sentinel, an enterprise AI-powered integrated risk management platform. The script is organized into five flows covering different user personas and use cases.
 
 **Demo Duration**: 25–30 minutes (full walkthrough)
 **Recommended Audience**: Executives, risk officers, compliance teams, board members
@@ -17,8 +17,8 @@ Show enterprise risk posture at a glance and demonstrate AI-powered narrative ge
 
 ### Steps
 
-1. **Launch IRM Command**
-   - Open the browser and navigate to the IRM Command URL
+1. **Launch IRM Sentinel**
+   - Open the browser and navigate to the IRM Sentinel URL
    - Lands on the **Dashboard** page
    - Note the clean, professional dark theme with purple accents
    - Take a screenshot of the full dashboard for reference
@@ -683,7 +683,7 @@ Demonstrate conversational AI interface for query answering, quick actions, and 
 - "Explainable AI (like the score decomposition) ensures users understand AI decisions, not just trust them."
 
 **6. Enterprise-Grade Platform**
-- "IRM Command consolidates risk management across operational, credit, market, liquidity, and compliance domains."
+- "IRM Sentinel consolidates risk management across operational, credit, market, liquidity, and compliance domains."
 - "It's not a point solution—it's an integrated platform designed for G-SIBs."
 - "The AI is a force multiplier: it accelerates risk assessment, reduces manual workload, and improves consistency."
 
@@ -697,7 +697,7 @@ Demonstrate conversational AI interface for query answering, quick actions, and 
 ## Demo Logistics
 
 ### Prerequisites
-- IRM Command app running locally or deployed to a staging environment
+- IRM Sentinel app running locally or deployed to a staging environment
 - Latest Chrome/Safari/Firefox browser
 - Screen sharing capability (if remote demo)
 - Demo account with sample data pre-loaded
@@ -747,7 +747,7 @@ A: Yes. Prompt templates are configurable, and in production, the Claude integra
 A: In this prototype, all data stays in-browser. In production, the governance service runs in your cloud infrastructure with full encryption, access controls, and audit logging.
 
 **Q: How does this integrate with our existing systems?**
-A: IRM Command is designed as an integration hub. It can pull data from risk management systems, CTRM platforms, audit systems, and regulatory reporting tools via APIs.
+A: IRM Sentinel is designed as an integration hub. It can pull data from risk management systems, CTRM platforms, audit systems, and regulatory reporting tools via APIs.
 
 **Q: What's the ROI?**
 A: Time savings: Risk assessments drop from 2 hours to 5 minutes. Control testing efficiency improves 30%. Audit readiness increases. Regulatory findings decrease.

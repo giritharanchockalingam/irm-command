@@ -1,5 +1,5 @@
 /**
- * IRM Command - Seed Data
+ * IRM Sentinel - Seed Data
  * Realistic G-SIB bank data for Integrated Risk Management Platform
  * All data is fictional but reflects typical large US bank scenarios
  */
