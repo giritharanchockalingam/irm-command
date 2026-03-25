@@ -710,79 +710,239 @@ Management should prioritize control enhancements targeting the highest-impact r
   private handleFAQ(query: string): string {
     const q = query.toLowerCase().trim();
 
-    // ---- Direct keyword matching for common short queries ----
+    // ---- Structured knowledge base: each entry has patterns and a factual response ----
+    const knowledgeBase: Array<{ patterns: RegExp[]; response: string; keywords: string[] }> = [
+      // ===== GRC FUNDAMENTALS =====
+      {
+        patterns: [/\b(what is grc|what.?s grc|explain grc|grc mean|grc stand|define grc|grc definition|governance.+risk.+compliance)\b/],
+        keywords: ['grc', 'governance risk compliance'],
+        response: "GRC stands for Governance, Risk, and Compliance — three interconnected disciplines that ensure an organization operates within its risk appetite while meeting regulatory obligations.\n\nGovernance defines the policies, decision-making structures, and accountability frameworks set by the Board and senior management. Risk Management identifies, assesses, monitors, and mitigates threats across credit, market, operational, cyber, and strategic domains. Compliance ensures adherence to laws, regulations, and internal policies — for banks, this includes OCC, FDIC, Federal Reserve, and SEC requirements.\n\nIRM Command integrates all three into a single platform: the Dashboard provides governance-level visibility, the Risk Register and Workbench handle risk assessment, and the Compliance module tracks regulatory obligations and control mappings."
+      },
+      // IRM / platform identity
+      {
+        patterns: [/\b(what is irm|what.?s irm|expand irm|irm stand|irm mean|about irm|tell me about irm|what does irm)\b/],
+        keywords: ['irm', 'integrated risk management', 'irm command', 'platform'],
+        response: "IRM stands for Integrated Risk Management. IRM Command is an enterprise GRC platform built for G-SIB and large banks — it brings together risk registers, control libraries, vendor oversight, compliance tracking, and AI-powered analytics into a single command center.\n\nThe platform covers eight risk domains (Credit, Market, Operational, Compliance, Cyber, Third-Party, Strategic, Liquidity), maps controls to regulatory frameworks (SOC 2, Basel III, NIST CSF, ISO 27001, SOX, GDPR, DORA), and provides AI-generated narratives calibrated to supervisory expectations from the OCC, FDIC, and Federal Reserve."
+      },
+      // Copilot usage / help
+      {
+        patterns: [/\b(help|what can you do|how do i use|capabilities|what do you do|how to use copilot|getting started)\b/],
+        keywords: ['help', 'capabilities', 'copilot'],
+        response: "I'm your GRC copilot — here's what I can help with:\n\nAsk about your data — \"What are the top risks by severity?\" or \"Which vendors have SLA violations?\"\nGet explanations — \"What is a KRI?\" or \"Explain inherent vs residual risk\"\nNavigate the platform — \"Show me the TPRM module\" or \"Where do I find control testing?\"\nGenerate analysis — \"Summarize our compliance posture\" or \"List overdue audit findings\"\n\nJust type naturally — I understand GRC terminology and can pull live data from your risk register, control library, and vendor catalog."
+      },
+      // ===== RISK MANAGEMENT CONCEPTS =====
+      // KRI
+      {
+        patterns: [/\b(what is a kri|what.?s a kri|kri mean|key risk indicator|explain kri|define kri)\b/],
+        keywords: ['kri', 'key risk indicator'],
+        response: "A Key Risk Indicator (KRI) is a metric that signals changes in your risk exposure before losses materialize — essentially an early warning system.\n\nEach KRI has a current value measured against thresholds. When a KRI crosses a threshold, it moves from Normal to Warning to Breach to Critical. Trends show whether it's Improving, Stable, or Deteriorating.\n\nFor example, if your \"Operational Loss Frequency\" KRI spikes from 3 to 8 incidents/month, that's a breach — the platform flags it and triggers alerts to the risk owner. Check the Dashboard to see your current KRI breach count."
+      },
+      // Risk appetite
+      {
+        patterns: [/\b(risk appetite|risk tolerance|acceptable risk|how much risk|appetite statement)\b/],
+        keywords: ['appetite', 'tolerance', 'acceptable risk'],
+        response: "Risk appetite is the level of risk your institution is willing to accept in pursuit of its objectives. It's set by the Board and Risk Committee, then quantified as thresholds for each risk category.\n\nIn IRM Command, risk appetite shows up as the scoring boundaries — when an inherent or residual risk score exceeds the appetite threshold (typically >4 on a 1-5 scale), it triggers escalation to the Risk Committee. The AI Workbench lets you model scenarios against these thresholds to test whether proposed activities fall within or outside your stated appetite."
+      },
+      // Inherent vs residual risk
+      {
+        patterns: [/\b(inherent.+residual|residual.+inherent|before controls|after controls|risk score|inherent risk|residual risk)\b/],
+        keywords: ['inherent', 'residual', 'risk score'],
+        response: "These are the two key risk measurements in any risk management framework:\n\nInherent risk is the risk level before any controls are applied — the raw exposure if nothing were in place to mitigate it. Residual risk is the risk that remains after your controls are in effect.\n\nThe gap between them shows how effective your control environment is. A large gap means strong controls. A small gap means weak controls or controls not addressing the right threats. On the Dashboard, the Enterprise Risk Score reflects average residual risk across your portfolio. The AI Workbench calculates both for any scenario you model."
+      },
+      // Risk categories
+      {
+        patterns: [/\b(risk categor|types of risk|risk type|operational risk|credit risk|market risk|cyber risk|strategic risk|liquidity risk|what risks)\b/],
+        keywords: ['risk category', 'risk type', 'operational', 'credit', 'market', 'cyber', 'strategic', 'liquidity'],
+        response: "IRM Command tracks eight standard risk categories aligned with OCC and Basel supervisory guidance:\n\nCredit Risk — potential loss from borrower or counterparty default.\nMarket Risk — exposure to adverse movements in interest rates, FX, equities, or commodities.\nOperational Risk — loss from failed processes, people, systems, or external events.\nCompliance Risk — violations of laws, regulations, or internal policies.\nCyber Risk — threats to information security, data integrity, and system availability.\nThird-Party Risk — exposure from vendors, outsourcing, and supply chain dependencies.\nStrategic Risk — threats to business model viability, competitive position, or capital planning.\nLiquidity Risk — inability to meet short-term obligations without significant loss.\n\nEach risk in the register is categorized and scored for both inherent and residual exposure."
+      },
+      // Loss event
+      {
+        patterns: [/\b(loss event|document.+loss|financial loss|loss history|operational loss)\b/],
+        keywords: ['loss event', 'loss history', 'financial loss'],
+        response: "A loss event is a documented financial loss from a risk materializing — operational incidents, credit defaults, cyber breaches, compliance penalties, etc.\n\nYou can log them with amount, date, category, business unit, root cause, and linked risks. The platform aggregates losses for KRI trending (e.g., total quarterly losses), regulatory reporting, and the AI Workbench's loss history factor.\n\nCheck the Dashboard's \"Capital at Risk\" metric for the current aggregate exposure."
+      },
+      // Risk heat map
+      {
+        patterns: [/\b(heat map|heatmap|risk matrix|likelihood.+impact|impact.+likelihood|risk plot)\b/],
+        keywords: ['heat map', 'heatmap', 'risk matrix'],
+        response: "The Risk Heat Map is a visual matrix that plots risks by likelihood (x-axis) and impact (y-axis), both scored 1-5. Each cell is color-coded: red for critical (high likelihood + high impact), amber for elevated, yellow for moderate, and green for low.\n\nOn the Dashboard, the heat map provides an at-a-glance view of your risk distribution. Clicking any cell shows the specific risks in that zone. The distribution bars show how many risks fall in each severity band, helping identify concentration risk."
+      },
+      // Escalation
+      {
+        patterns: [/\b(escalat|critical risk|high risk|risk committee|board report)\b/],
+        keywords: ['escalation', 'critical risk', 'risk committee', 'board'],
+        response: "Risks are escalated when they exceed defined thresholds — typically a residual score above 4 or financial impact above $10M. Escalated risks require Risk Committee review and a documented decision: either accept the risk with justification, or approve a remediation plan with timeline.\n\nYou can also manually escalate any risk from its detail view if you believe it warrants senior attention. The Board Pack quick action in the AI Command Center generates a board-ready summary of all escalated risks."
+      },
+      // ===== CONTROLS & COMPLIANCE =====
+      // Control testing
+      {
+        patterns: [/\b(control test|test.+control|testing|control effectiveness|soc 2 control|control environment)\b/],
+        keywords: ['control testing', 'control effectiveness', 'test'],
+        response: "Control testing validates that your controls are actually working as designed. In the SOC 2 Controls page, each control shows:\n\nTest frequency — Quarterly, Semi-Annual, Annual, or On-Demand.\nLast tested / Next review dates.\nEffectiveness — Effective, Partially Effective, or Ineffective.\nEvidence — documentation proving the control operates correctly.\n\nControls marked Ineffective or Partially Effective get flagged for remediation. The Dashboard shows your overall Control Test Coverage percentage. Control types include Preventive, Detective, and Corrective — a mature environment has a mix of all three."
+      },
+      // Compliance / framework
+      {
+        patterns: [/\b(compliance|regulatory change|regulation|regulatory|sox|gdpr|nist|basel|iso 27001|framework|dora|coso)\b/],
+        keywords: ['compliance', 'regulatory', 'framework', 'sox', 'gdpr', 'nist', 'basel', 'iso', 'dora', 'coso'],
+        response: "IRM Command maps controls to major regulatory frameworks: SOC 2 Type II, Basel III/IV, NIST CSF 2.0, ISO 27001:2022, COSO ERM, SOX, GDPR, and DORA.\n\nThe Compliance module tracks regulatory changes by source (OCC, FDIC, Federal Reserve, SEC, etc.), assesses their impact, and links them to your existing controls and frameworks. When a new regulation drops, you can trace exactly which controls need updating.\n\nCheck the Compliance page to see your current compliance posture and any gaps."
+      },
+      // MRA / MRIA / findings
+      {
+        patterns: [/\b(management finding|mra|mria|audit finding|finding|matter.+requiring|examination finding)\b/],
+        keywords: ['mra', 'mria', 'finding', 'audit', 'management finding'],
+        response: "Management findings are deficiencies identified through audits or exams:\n\nMRA (Matter Requiring Attention) — needs corrective action within a defined timeline. These are the standard exam findings from OCC, FDIC, or internal audit.\nMRIA (Matter Requiring Immediate Attention) — urgent, requires immediate remediation. These indicate significant risk to the institution's safety and soundness.\n\nEach finding has a severity, owner, due date, remediation plan, and links to affected risks and controls. The Exceptions page tracks all open findings and their remediation status. Overdue findings are escalated automatically."
+      },
+      // Three lines of defense
+      {
+        patterns: [/\b(three lines|3 lines|lines of defense|first line|second line|third line|1st line|2nd line|3rd line)\b/],
+        keywords: ['three lines', 'lines of defense', 'first line', 'second line'],
+        response: "The Three Lines of Defense model is the standard governance framework for risk management in financial institutions:\n\nFirst Line — Business units and operational management. They own and manage risk day-to-day, execute controls, and escalate issues. In IRM Command, these are the risk and control owners assigned to each item.\n\nSecond Line — Risk Management and Compliance functions. They set policy, provide oversight, challenge the first line, and monitor KRIs. The Dashboard and Compliance modules support this function.\n\nThird Line — Internal Audit. They provide independent assurance that the first and second lines are operating effectively. Audit findings flow into the Exceptions module as MRAs/MRIAs.\n\nRegulators like the OCC expect clear separation between these lines."
+      },
+      // ===== THIRD-PARTY RISK =====
+      // Vendor / TPRM
+      {
+        patterns: [/\b(vendor risk|tprm|third.?party|monitor vendor|vendor tier|vendor assessment|vendor management|outsourc)\b/],
+        keywords: ['vendor', 'tprm', 'third party', 'outsourcing'],
+        response: "The TPRM module is where you manage all third-party risk. Each vendor gets a tier (1-3) based on criticality:\n\nTier 1 — Critical vendors (cloud providers, core banking) — enhanced oversight, quarterly reviews.\nTier 2 — Important vendors — standard monitoring, semi-annual reviews.\nTier 3 — Standard vendors — periodic review, annual attestation.\n\nFor each vendor you can track SLA status (Green/Yellow/Red), inherent and residual risk scores, contract details, and monitoring alerts. The TPRM page also generates due diligence questionnaires and vendor assessment narratives calibrated to OCC guidance on third-party relationships."
+      },
+      // SLA
+      {
+        patterns: [/\b(sla|service level|uptime|availability|performance metric)\b/],
+        keywords: ['sla', 'service level', 'uptime', 'availability'],
+        response: "Service Level Agreements (SLAs) define contracted performance standards between your institution and its vendors. IRM Command tracks SLA status with a traffic-light system:\n\nGreen — vendor consistently meets all SLA commitments.\nYellow — marginal performance, at-risk of breaching.\nRed — contracted performance not met, requires remediation or escalation.\n\nSLA monitoring covers uptime, response times, incident resolution, and data processing commitments. Vendors in Red status trigger alerts and may require management action plans or contract re-negotiation."
+      },
+      // ===== EXAM & SUPERVISORY =====
+      // Exam / examiner / ROE
+      {
+        patterns: [/\b(exam|examiner|roe|report of examination|occ|fdic|supervisory|regulator visit)\b/],
+        keywords: ['exam', 'examiner', 'roe', 'occ', 'fdic', 'supervisory'],
+        response: "IRM Command can generate OCC/FDIC-style Report of Examination (ROE) narratives. The Examiner View compiles your risk profile, control environment assessment, management findings status, and KRI metrics into a supervisory-ready narrative.\n\nThis is especially useful for exam preparation — you can preview what regulators would see and identify gaps before they do. The AI Command Center's quick actions include \"Draft Exam Response\" which produces a narrative calibrated to supervisory language and expectations."
+      },
+      // CAMELS
+      {
+        patterns: [/\b(camels|camel rating|composite rating|safety.+soundness)\b/],
+        keywords: ['camels', 'composite rating', 'safety soundness'],
+        response: "CAMELS is the supervisory rating system used by U.S. banking regulators (OCC, FDIC, Federal Reserve) to assess a bank's overall condition. Each component is rated 1 (strong) to 5 (critically deficient):\n\nC — Capital adequacy\nA — Asset quality\nM — Management capability\nE — Earnings quality\nL — Liquidity position\nS — Sensitivity to market risk\n\nIRM Command's risk data maps to several CAMELS dimensions: the risk register informs Asset quality and Sensitivity, the control environment reflects Management capability, and loss events tie to Earnings and Capital. A composite rating of 1-2 is considered satisfactory; 3 indicates concerns; 4-5 is unsatisfactory."
+      },
+      // ===== OPERATIONAL RESILIENCE =====
+      {
+        patterns: [/\b(operational resilience|business continuity|disaster recovery|bcp|drp|rto|rpo)\b/],
+        keywords: ['resilience', 'continuity', 'disaster recovery', 'bcp', 'drp'],
+        response: "Operational resilience is the ability of an institution to deliver critical operations through disruption. It goes beyond traditional BCP/DR by focusing on the end-to-end delivery of important business services.\n\nKey concepts: Recovery Time Objective (RTO) — maximum acceptable downtime. Recovery Point Objective (RPO) — maximum acceptable data loss. Impact Tolerance — the maximum disruption a service can absorb before causing intolerable harm.\n\nIRM Command tracks resilience through vendor BCP assessments, control testing for availability controls, and monitoring alerts for service disruptions. The TPRM module specifically evaluates vendor resilience posture."
+      },
+      // ===== AI & PLATFORM =====
+      // Architecture / tech stack
+      {
+        patterns: [/\b(architecture|tech stack|built with|technology|how is it built|what tech)\b/],
+        keywords: ['architecture', 'tech stack', 'technology'],
+        response: "IRM Command is built on a modern enterprise stack:\n\nFrontend — React 18, TypeScript, Vite 5, Tailwind CSS.\nState Management — Zustand for client state.\nData Layer — Supabase (PostgreSQL) with Row Level Security and tenant isolation.\nAI Engine — Multi-LLM routing (Claude, GPT-4, Groq) with MCP tool registry and RAG knowledge base, governed by an AI governance framework with prompt injection detection and data classification.\nDeployment — Vercel Edge Network with global CDN.\nSecurity — RBAC engine, JWT verification with JWKS, audit logging, enterprise SSO support, Zod input validation.\n\nSee the Architecture page for full TOGAF ADM phases, diagrams, and the integration catalog."
+      },
+      // AI governance
+      {
+        patterns: [/\b(ai governance|ai risk|model risk|ai policy|responsible ai|llm risk|ai safety)\b/],
+        keywords: ['ai governance', 'model risk', 'responsible ai', 'ai safety'],
+        response: "AI Governance ensures that AI/ML systems operate within defined risk parameters. IRM Command's AI governance framework includes:\n\nPre-flight validation — every AI request is checked for prompt injection, PII leakage, and data classification before processing.\nProvider routing — queries are routed to appropriate LLM providers based on complexity and data sensitivity.\nOutput validation — AI responses are reviewed for hallucination indicators and compliance with institutional policies.\nAudit trail — all AI interactions are logged for regulatory examination.\n\nThis aligns with the OCC's guidance on model risk management (SR 11-7) and emerging AI-specific regulatory expectations from the Federal Reserve and FDIC."
+      },
+      // Create a risk
+      {
+        patterns: [/\b(create.+risk|add.+risk|new risk|register.+risk|log.+risk|how to add)\b/],
+        keywords: ['create risk', 'add risk', 'new risk', 'register'],
+        response: "To create a new risk, head to the Dashboard or Risk Register and look for the \"New Risk\" action. You'll fill in:\n\nTitle and description — what the risk is.\nCategory — Credit, Market, Operational, Compliance, Cyber, Third-Party, Strategic, or Liquidity.\nBusiness unit — which part of the bank it affects.\nLikelihood and Impact — scored 1-5, the platform auto-calculates your inherent risk score.\nOwner and linked controls — who's accountable and what mitigates it.\n\nOnce saved, it shows up across the dashboard metrics, KRI linkages, and compliance mappings automatically."
+      },
+      // RCSA
+      {
+        patterns: [/\b(rcsa|risk.+control.+self.+assessment|self assessment)\b/],
+        keywords: ['rcsa', 'self assessment'],
+        response: "RCSA (Risk and Control Self-Assessment) is a process where business units identify and evaluate their own risks and the effectiveness of controls mitigating those risks. It's a first-line-of-defense activity that feeds into the enterprise risk register.\n\nIn a typical RCSA cycle: business units document processes, identify risk events, assess inherent risk, map existing controls, rate control effectiveness, and calculate residual risk. IRM Command's AI Workbench can model RCSA scenarios by letting you select business line, risk type, and control parameters to generate composite risk scores."
+      },
+      // Stress testing / scenario analysis
+      {
+        patterns: [/\b(stress test|scenario analysis|what.?if|monte carlo|sensitivity analysis|capital stress)\b/],
+        keywords: ['stress test', 'scenario', 'what if', 'sensitivity'],
+        response: "Scenario analysis and stress testing evaluate how adverse conditions affect your risk profile. The AI Workbench in IRM Command lets you model risk scenarios by configuring:\n\nBusiness line, product, geography, and risk type.\nInherent risk level and control strength.\nHistorical loss data.\n\nThe engine calculates a composite risk score using a weighted model: InherentRisk (30%) + ControlGap (25%) + LossHistory (15%) + BusinessComplexity (10%) + RegulatoryFactor (10%) + AdditionalFactors (10%). Pre-built scenarios are available for common risk events. Results include a residual risk rating and AI-generated narrative."
+      },
+      // Concentration risk
+      {
+        patterns: [/\b(concentration risk|single.+exposure|diversif|portfolio.+concentration)\b/],
+        keywords: ['concentration', 'single exposure', 'diversification'],
+        response: "Concentration risk arises when an institution has excessive exposure to a single counterparty, sector, geography, or risk factor. Regulators flag concentration when:\n\nA single vendor or counterparty represents a disproportionate share of critical operations.\nRisk is concentrated in one category or business line.\nGeographic exposure is undiversified.\n\nIRM Command's Dashboard heat map and risk distribution charts help identify concentration. The TPRM module flags vendor concentration (multiple critical services from one provider), and the risk register highlights category concentrations."
+      },
+      // Incident response
+      {
+        patterns: [/\b(incident response|incident management|security incident|breach response|cyber incident|containment)\b/],
+        keywords: ['incident response', 'incident management', 'security incident', 'breach'],
+        response: "Incident response is the structured process for detecting, containing, eradicating, and recovering from security events. IRM Command documents incident response procedures aligned with NIST SP 800-61:\n\nSeverity classification — Critical (P1, 15-min response SLA), High (P2, 1-hour), Medium (P3, 4-hour), Low (P4, 24-hour).\nContainment steps — network isolation, credential rotation, evidence preservation.\nEscalation paths — SOC to CISO to Risk Committee to Board for critical incidents.\nRegulatory notification — OCC, FDIC, and law enforcement timelines.\n\nThe monitoring alerts in the Dashboard track active incidents and their resolution status."
+      },
+      // Data classification
+      {
+        patterns: [/\b(data classif|data sensitiv|pii|personal data|confidential data|data protect|data privacy)\b/],
+        keywords: ['data classification', 'pii', 'personal data', 'confidential', 'data protection'],
+        response: "Data classification assigns sensitivity levels to information assets to ensure appropriate handling and protection. Standard classification tiers:\n\nPublic — no restrictions on disclosure.\nInternal — for authorized personnel only, no external sharing.\nConfidential — restricted access, encryption required at rest and in transit.\nRestricted/PII — personally identifiable information subject to regulatory requirements (GDPR, CCPA, GLBA).\n\nIRM Command's AI governance layer automatically classifies data in AI requests and strips PII before processing. The security controls framework includes data protection controls mapped to NIST and ISO 27001."
+      },
+      // Audit trail
+      {
+        patterns: [/\b(audit trail|audit log|logging|who did what|change log|tamper)\b/],
+        keywords: ['audit trail', 'audit log', 'logging'],
+        response: "The audit trail provides a tamper-evident record of all significant actions in the platform. Every risk assessment, control update, vendor review, and AI interaction is logged with:\n\nTimestamp, user identity, action performed, before/after state, and IP address (anonymized for privacy).\n\nAudit logs are append-only — they cannot be modified or deleted. This satisfies OCC examination requirements for demonstrating management oversight and regulatory compliance. The logs support the SIEM integration for real-time security monitoring."
+      },
+      // RBAC / permissions
+      {
+        patterns: [/\b(rbac|role.?based|permission|access control|who can|user role|authorization)\b/],
+        keywords: ['rbac', 'role based', 'permission', 'access control'],
+        response: "IRM Command uses Role-Based Access Control (RBAC) to enforce least-privilege access. Pre-defined roles include:\n\nCRO (Chief Risk Officer) — full read/write access across all modules, workbench execution, AI copilot interaction.\nRisk Manager — risk register and control management.\nCompliance Officer — compliance module and regulatory change management.\nAuditor — read-only access across all modules for examination purposes.\nViewer — dashboard and reporting access only.\n\nEach role has specific permissions (e.g., workbench:execute, risks:write, compliance:manage). Permissions are enforced at the UI component level and validated server-side."
+      },
+    ];
 
-    // IRM / platform identity
-    if (/\b(what is irm|what.?s irm|expand irm|irm stand|irm mean|about irm|tell me about|what does irm)\b/.test(q)) {
-      return "IRM stands for **Integrated Risk Management**. IRM Command is our enterprise GRC platform built for G-SIB banks — it brings together risk registers, control libraries, vendor oversight, compliance tracking, and AI-powered analytics into a single command center.\n\nThink of it as your bank's operational nerve center for everything risk and compliance. You can explore the Dashboard for a real-time risk posture, use TPRM for vendor oversight, or ask me questions about your risk data right here.";
+    // ---- Pattern matching against knowledge base ----
+    for (const entry of knowledgeBase) {
+      for (const pattern of entry.patterns) {
+        if (pattern.test(q)) {
+          return entry.response;
+        }
+      }
     }
 
-    // Copilot usage / help
-    if (/\b(help|what can you do|how do i use|capabilities|what do you|how to use copilot|getting started)\b/.test(q)) {
-      return "I'm your GRC copilot — here's what I can help with:\n\n• **Ask about your data** — \"What are the top risks by severity?\" or \"Which vendors have SLA violations?\"\n• **Get explanations** — \"What is a KRI?\" or \"Explain inherent vs residual risk\"\n• **Navigate the platform** — \"Show me the TPRM module\" or \"Where do I find control testing?\"\n• **Generate analysis** — \"Summarize our compliance posture\" or \"List overdue audit findings\"\n\nJust type naturally — I understand GRC terminology and can pull live data from your risk register, control library, and vendor catalog.";
+    // ---- Fuzzy keyword fallback: score each entry by keyword overlap ----
+    const queryWords = q.split(/\s+/).filter(w => w.length > 2);
+    let bestMatch: { score: number; response: string } = { score: 0, response: '' };
+
+    for (const entry of knowledgeBase) {
+      let score = 0;
+      for (const keyword of entry.keywords) {
+        const kwWords = keyword.split(/\s+/);
+        for (const kw of kwWords) {
+          if (q.includes(kw) && kw.length > 2) {
+            score += kw.length; // longer keyword matches are stronger signals
+          }
+        }
+      }
+      // Also check if any query word appears in the response (topical relevance)
+      for (const word of queryWords) {
+        if (entry.keywords.some(k => k.includes(word))) {
+          score += 2;
+        }
+      }
+      if (score > bestMatch.score) {
+        bestMatch = { score, response: entry.response };
+      }
     }
 
-    // KRI
-    if (/\b(what is a kri|what.?s a kri|kri mean|key risk indicator|explain kri)\b/.test(q)) {
-      return "A **Key Risk Indicator (KRI)** is a metric that signals changes in your risk exposure before losses materialize — essentially an early warning system.\n\nEach KRI has a current value measured against thresholds. When a KRI crosses a threshold, it moves from Normal → Warning → Breach → Critical. Trends show whether it's Improving, Stable, or Deteriorating.\n\nFor example, if your \"Operational Loss Frequency\" KRI spikes from 3 to 8 incidents/month, that's a breach — the platform flags it and triggers alerts to the risk owner. Check the Dashboard to see your current KRI breach count.";
+    // If we found a reasonable fuzzy match (threshold: at least one meaningful keyword)
+    if (bestMatch.score >= 3) {
+      return bestMatch.response;
     }
 
-    // Create a risk
-    if (/\b(create.+risk|add.+risk|new risk|register.+risk|log.+risk)\b/.test(q)) {
-      return "To create a new risk, head to the **Dashboard** or **Risk Register** and look for the \"New Risk\" action. You'll fill in:\n\n• **Title & description** — what the risk is\n• **Category** — Credit, Market, Operational, Compliance, Cyber, Third-Party, Strategic, or Liquidity\n• **Business unit** — which part of the bank it affects\n• **Likelihood & Impact** — scored 1-5, the platform auto-calculates your inherent risk score\n• **Owner & linked controls** — who's accountable and what mitigates it\n\nOnce saved, it shows up across the dashboard metrics, KRI linkages, and compliance mappings automatically.";
-    }
+    // ---- Intelligent fallback: acknowledge the question and offer relevant paths ----
+    const dal = getDataAccess();
+    const risks = dal.getRisks();
+    const issues = dal.getIssues();
+    const kris = dal.getKRIs();
+    const breached = kris.filter(k => k.breachLevel === 'Breach' || k.breachLevel === 'Critical').length;
+    const overdue = issues.filter(i => {
+      const due = i.dueDate instanceof Date ? i.dueDate : new Date(i.dueDate);
+      return due < new Date() && i.status !== 'Closed';
+    }).length;
 
-    // Vendor risk / TPRM
-    if (/\b(vendor risk|tprm|third.?party|monitor vendor|vendor tier|vendor assessment)\b/.test(q)) {
-      return "The **TPRM module** is where you manage all third-party risk. Each vendor gets a tier (1-3) based on criticality:\n\n• **Tier 1** — Critical vendors (cloud providers, core banking) — enhanced oversight, quarterly reviews\n• **Tier 2** — Important vendors — standard monitoring, semi-annual reviews\n• **Tier 3** — Standard vendors — periodic review, annual attestation\n\nFor each vendor you can track SLA status (Green/Yellow/Red), inherent and residual risk scores, contract details, and monitoring alerts. Click on any vendor in the TPRM page to see their full risk profile.";
-    }
-
-    // Compliance / regulatory
-    if (/\b(compliance|regulatory change|regulation|regulatory|sox|gdpr|nist|basel|iso 27001|framework)\b/.test(q)) {
-      return "IRM Command maps controls to major regulatory frameworks: **SOC 2 Type II**, **Basel III/IV**, **NIST CSF 2.0**, **ISO 27001:2022**, **COSO ERM**, **SOX**, **GDPR**, and **DORA**.\n\nThe Compliance module tracks regulatory changes by source (OCC, FDIC, Federal Reserve, SEC, etc.), assesses their impact, and links them to your existing controls and frameworks. When a new regulation drops, you can trace exactly which controls need updating.\n\nCheck the Compliance page to see your current compliance posture and any gaps.";
-    }
-
-    // Control testing
-    if (/\b(control test|test.+control|testing|control effectiveness|soc 2 control)\b/.test(q)) {
-      return "Control testing validates that your controls are actually working as designed. In the **SOC 2 Controls** page, each control shows:\n\n• **Test frequency** — Quarterly, Semi-Annual, Annual, or On-Demand\n• **Last tested / Next review** dates\n• **Effectiveness** — Effective, Partially Effective, or Ineffective\n• **Evidence** — documentation proving the control operates correctly\n\nControls marked Ineffective or Partially Effective get flagged for remediation. The Dashboard shows your overall Control Test Coverage percentage.";
-    }
-
-    // Management finding / MRA / MRIA
-    if (/\b(management finding|mra|mria|audit finding|finding)\b/.test(q)) {
-      return "Management findings are deficiencies identified through audits or exams:\n\n• **MRA** (Matter Requiring Attention) — needs corrective action within a defined timeline\n• **MRIA** (Matter Requiring Immediate Attention) — urgent, requires immediate remediation\n\nEach finding has a severity, owner, due date, remediation plan, and links to affected risks and controls. The Exceptions page tracks all open findings and their remediation status. Overdue findings are escalated automatically.";
-    }
-
-    // Risk appetite
-    if (/\b(risk appetite|risk tolerance|acceptable risk|how much risk)\b/.test(q)) {
-      return "**Risk appetite** is the level of risk your institution is willing to accept in pursuit of its objectives. It's set by the Board and Risk Committee, then quantified as thresholds for each risk category.\n\nIn IRM Command, risk appetite shows up as the scoring boundaries — when an inherent or residual risk score exceeds the appetite threshold (typically >4 on a 1-5 scale), it triggers escalation to the Risk Committee. The Risk Scoring Studio lets you model scenarios against these thresholds.";
-    }
-
-    // Inherent vs residual risk
-    if (/\b(inherent.+residual|residual.+inherent|before controls|after controls|risk score)\b/.test(q)) {
-      return "Great question — these are the two key risk measurements:\n\n• **Inherent risk** — the risk level *before* any controls are applied. Think of it as the raw exposure.\n• **Residual risk** — the risk that remains *after* your controls are in effect.\n\nThe gap between them shows how effective your control environment is. A large gap = strong controls. A small gap = weak controls or controls not addressing the right threats.\n\nOn the Dashboard, the Enterprise Risk Score reflects average residual risk across your portfolio.";
-    }
-
-    // Loss event
-    if (/\b(loss event|document.+loss|financial loss|loss history)\b/.test(q)) {
-      return "A **loss event** is a documented financial loss from a risk materializing — operational incidents, credit defaults, cyber breaches, compliance penalties, etc.\n\nYou can log them with amount, date, category, business unit, root cause, and linked risks. The platform aggregates losses for KRI trending (e.g., total quarterly losses), regulatory reporting, and the Risk Scoring Studio's loss history factor.\n\nCheck the Dashboard's \"Capital at Risk\" metric for the current aggregate exposure.";
-    }
-
-    // Exam / examiner / ROE
-    if (/\b(exam|examiner|roe|report of examination|occ|fdic|supervisory)\b/.test(q)) {
-      return "IRM Command can generate **OCC/FDIC-style Report of Examination (ROE)** narratives. The Examiner View compiles your risk profile, control environment assessment, management findings status, and KRI metrics into a supervisory-ready narrative.\n\nThis is especially useful for exam preparation — you can preview what regulators would see and identify gaps before they do. Access it via the AI Command Center's quick actions.";
-    }
-
-    // Escalate risk
-    if (/\b(escalat|critical risk|high risk|risk committee)\b/.test(q)) {
-      return "Risks are escalated when they exceed defined thresholds — typically a residual score above 4 or financial impact above $10M. Escalated risks require Risk Committee review and a documented decision: either accept the risk with justification, or approve a remediation plan with timeline.\n\nYou can also manually escalate any risk from its detail view if you believe it warrants senior attention.";
-    }
-
-    // Architecture / tech stack
-    if (/\b(architecture|tech stack|built with|technology|how is it built)\b/.test(q)) {
-      return "IRM Command is built on a modern enterprise stack:\n\n• **Frontend** — React 18 + TypeScript + Vite + Tailwind CSS\n• **State** — Zustand for client state management\n• **Data** — Supabase (PostgreSQL) with Row Level Security\n• **AI** — Multi-LLM routing (Claude, GPT-4, Groq) with MCP tool registry and RAG knowledge base\n• **Deployment** — Vercel Edge Network with global CDN\n• **Security** — RBAC engine, audit logging, enterprise SSO support\n\nSee the Architecture page for full TOGAF ADM phases, diagrams, and the integration catalog.";
-    }
-
-    // Default — friendly and helpful
-    return "I'm here to help with anything GRC-related! Here are some things you can ask me:\n\n• **\"What are the top risks?\"** — I'll pull live data from your risk register\n• **\"Which vendors have SLA issues?\"** — real-time vendor monitoring status\n• **\"What KRIs are in breach?\"** — current KRI alert summary\n• **\"Explain control testing\"** — GRC concept explainers\n• **\"Show compliance gaps\"** — framework coverage analysis\n\nI can also help with navigation, risk scoring, regulatory changes, and exam preparation. Just ask naturally!";
+    return `I don't have a specific answer for "${query.trim()}" in my knowledge base. I can answer questions about GRC concepts (governance, risk, compliance), risk management terminology, regulatory frameworks, and your institution's live risk data.\n\nHere's what's happening right now in your risk environment:\n• ${risks.length} risks tracked across 8 categories\n• ${breached} KRIs in breach status requiring attention\n• ${overdue} overdue management findings\n\nTry asking: "What is GRC?", "Show me the top risks", "Which KRIs are breached?", "Explain three lines of defense", or "What is a CAMELS rating?"`;
   }
 }
