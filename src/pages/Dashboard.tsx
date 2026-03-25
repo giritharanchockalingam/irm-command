@@ -452,137 +452,187 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* ===== MAIN CONTENT GRID ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT: Risk Heat Map (2/3) */}
-          <div className="lg:col-span-2">
-            <Card className="h-full">
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <BarChart3 size={20} className="text-cyan-400" />
-                  <h2 className="text-lg font-semibold">Risk Heat Map</h2>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr>
-                        <th className={`text-left ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal pb-3 pr-2`}>
-                          Impact \
-                        </th>
-                        {['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain'].map(
-                          (label, idx) => (
-                            <th
-                              key={`likelihood-${idx}`}
-                              className={`text-center ${isDark ? 'text-slate-400' : 'text-slate-600'} font-normal pb-3 w-20`}
-                            >
-                              <div className="text-xs">{label}</div>
-                            </th>
-                          )
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {['Severe', 'Major', 'Moderate', 'Minor', 'Negligible'].map(
-                        (impactLabel, impactIdx) => {
-                          const impact = 5 - impactIdx;
-                          return (
-                            <tr key={`impact-${impactIdx}`}>
-                              <td className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'} pr-2 py-2 font-medium`}>
-                                {impactLabel}
-                              </td>
-                              {[1, 2, 3, 4, 5].map((likelihood) => {
-                                const count = riskHeatMap[`${impact}-${likelihood}`] || 0;
-                                const isSelected =
-                                  selectedRiskCell?.impact === impact &&
-                                  selectedRiskCell?.likelihood === likelihood;
-                                return (
-                                  <td
-                                    key={`cell-${impact}-${likelihood}`}
-                                    className={`p-2 text-center cursor-pointer transition-all ${getRiskColor(
-                                      impact,
-                                      likelihood
-                                    )} ${isSelected ? 'ring-2 ring-cyan-400' : ''} rounded border`}
-                                    onClick={() =>
-                                      handleRiskCellClick(impact, likelihood)
-                                    }
-                                  >
-                                    {count > 0 && (
-                                      <div className="font-bold text-sm">{count}</div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          );
-                        }
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+        {/* Layout rationale: AI Digest is the CRO's primary intelligence briefing —
+            it deserves the wider column. The Heat Map is a compact 5×5 reference visual. */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* LEFT: AI Daily Digest (7/12 ≈ 58%) — hero intelligence panel */}
+          <div className="lg:col-span-7">
+            <Card className="h-full flex flex-col">
+              <div className={`px-6 pt-6 pb-4 border-b ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Brain size={20} className="text-purple-400" />
+                    <h2 className="text-lg font-semibold">AI Daily Digest</h2>
+                  </div>
                   <div className="text-xs text-slate-500">
-                    Total risks in view: {risks.length}
+                    {digestContent ? `Generated ${new Date().toLocaleTimeString()}` : 'Not yet generated'}
                   </div>
                 </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setDigestTab('risk')}
+                      className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                        digestTab === 'risk'
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
+                          : isDark ? 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500' : 'bg-gray-100 border-gray-300 text-slate-600 hover:border-gray-400'
+                      }`}
+                    >
+                      Risk Posture
+                    </button>
+                    <button
+                      onClick={() => setDigestTab('examiner')}
+                      className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                        digestTab === 'examiner'
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
+                          : isDark ? 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500' : 'bg-gray-100 border-gray-300 text-slate-600 hover:border-gray-400'
+                      }`}
+                    >
+                      Examiner View
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleGenerateDigest}
+                    disabled={isGeneratingDigest}
+                    className="bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400 text-cyan-300 px-4 py-1.5 rounded text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingDigest ? 'Generating...' : 'Generate'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 p-6 overflow-y-auto max-h-[480px]">
+                {digestContent ? (
+                  <StreamingText text={digestContent} />
+                ) : (
+                  <div className={`flex flex-col items-center justify-center h-full py-12 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                    <Brain size={48} className="text-slate-600 mb-4 opacity-30" />
+                    <div className="text-sm font-medium mb-1">No digest generated yet</div>
+                    <div className="text-xs">Select a view and click Generate for an AI-powered briefing</div>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
 
-          {/* RIGHT: AI Daily Digest (1/3) */}
-          <div>
+          {/* RIGHT: Risk Heat Map (5/12 ≈ 42%) — compact reference visual */}
+          <div className="lg:col-span-5">
             <Card className="h-full flex flex-col">
-              <div className={`p-6 border-b ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                <div className="flex items-center gap-2 mb-4">
-                  <Brain size={20} className="text-purple-400" />
-                  <h2 className="text-lg font-semibold">AI Daily Digest</h2>
-                </div>
-
-                <div className="flex gap-2 mb-4">
-                  <button
-                    onClick={() => setDigestTab('risk')}
-                    className={`text-xs px-3 py-1.5 rounded border transition-colors ${
-                      digestTab === 'risk'
-                        ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
-                        : isDark ? 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500' : 'bg-gray-100 border-gray-300 text-slate-600 hover:border-gray-400'
-                    }`}
-                  >
-                    Risk Posture
-                  </button>
-                  <button
-                    onClick={() => setDigestTab('examiner')}
-                    className={`text-xs px-3 py-1.5 rounded border transition-colors ${
-                      digestTab === 'examiner'
-                        ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
-                        : isDark ? 'bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500' : 'bg-gray-100 border-gray-300 text-slate-600 hover:border-gray-400'
-                    }`}
-                  >
-                    Examiner View
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleGenerateDigest}
-                  disabled={isGeneratingDigest}
-                  className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400 text-cyan-300 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isGeneratingDigest ? 'Generating...' : 'Generate'}
-                </button>
-              </div>
-
-              <div className="flex-1 p-6 overflow-y-auto">
-                {digestContent ? (
-                  <>
-                    <StreamingText text={digestContent} />
-                    <div className="text-xs text-slate-500 mt-4">
-                      Generated {new Date().toLocaleTimeString()}
-                    </div>
-                  </>
-                ) : (
-                  <div className={`${isDark ? 'text-slate-500' : 'text-slate-600'} text-sm`}>
-                    Click Generate to create a personalized {digestTab} digest
+              <div className="p-6 flex-1">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 size={20} className="text-cyan-400" />
+                    <h2 className="text-lg font-semibold">Risk Heat Map</h2>
                   </div>
-                )}
+                  <div className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-slate-700/50 text-slate-400' : 'bg-gray-100 text-slate-600'}`}>
+                    {risks.length} risks
+                  </div>
+                </div>
+
+                {/* Compact 5×5 grid using CSS grid instead of table for density */}
+                <div className="mb-3">
+                  {/* Likelihood header */}
+                  <div className="grid grid-cols-6 gap-1 mb-1">
+                    <div></div>
+                    {['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost\nCertain'].map(
+                      (label, idx) => (
+                        <div
+                          key={`lh-${idx}`}
+                          className={`text-center text-[10px] leading-tight ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                        >
+                          {label}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {/* Impact rows */}
+                  {['Severe', 'Major', 'Moderate', 'Minor', 'Negligible'].map(
+                    (impactLabel, impactIdx) => {
+                      const impact = 5 - impactIdx;
+                      return (
+                        <div key={`row-${impactIdx}`} className="grid grid-cols-6 gap-1 mb-1">
+                          <div className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-500'} font-medium flex items-center pr-1 justify-end`}>
+                            {impactLabel}
+                          </div>
+                          {[1, 2, 3, 4, 5].map((likelihood) => {
+                            const count = riskHeatMap[`${impact}-${likelihood}`] || 0;
+                            const isSelected =
+                              selectedRiskCell?.impact === impact &&
+                              selectedRiskCell?.likelihood === likelihood;
+                            return (
+                              <div
+                                key={`cell-${impact}-${likelihood}`}
+                                className={`aspect-square flex items-center justify-center cursor-pointer transition-all ${getRiskColor(
+                                  impact,
+                                  likelihood
+                                )} ${isSelected ? 'ring-2 ring-cyan-400' : ''} rounded border text-xs`}
+                                onClick={() =>
+                                  handleRiskCellClick(impact, likelihood)
+                                }
+                              >
+                                {count > 0 && (
+                                  <span className="font-bold">{count}</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+
+                {/* Risk distribution summary — fills remaining vertical space */}
+                <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                  <div className={`text-xs font-medium mb-3 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Risk Distribution</div>
+                  <div className="space-y-2">
+                    {[
+                      { label: 'Critical / High', color: 'bg-red-500', count: risks.filter(r => r.impact * r.likelihood > 12).length },
+                      { label: 'Medium', color: 'bg-orange-500', count: risks.filter(r => { const s = r.impact * r.likelihood; return s > 6 && s <= 12; }).length },
+                      { label: 'Low', color: 'bg-yellow-500', count: risks.filter(r => { const s = r.impact * r.likelihood; return s > 2 && s <= 6; }).length },
+                      { label: 'Minimal', color: 'bg-emerald-500', count: risks.filter(r => r.impact * r.likelihood <= 2).length },
+                    ].map((band) => (
+                      <div key={band.label} className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${band.color}`} />
+                        <span className={`text-xs flex-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{band.label}</span>
+                        <span className={`text-xs font-mono font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{band.count}</span>
+                        <div className={`w-16 h-1.5 rounded-full ${isDark ? 'bg-slate-700' : 'bg-gray-200'} overflow-hidden`}>
+                          <div
+                            className={`h-full ${band.color}`}
+                            style={{ width: `${risks.length > 0 ? (band.count / risks.length) * 100 : 0}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top risk categories */}
+                <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                  <div className={`text-xs font-medium mb-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>By Category</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(
+                      risks.reduce((acc, r) => {
+                        acc[r.category] = (acc[r.category] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>)
+                    )
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 6)
+                      .map(([cat, count]) => (
+                        <span
+                          key={cat}
+                          className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                            isDark ? 'border-slate-600 text-slate-400' : 'border-gray-300 text-slate-600'
+                          }`}
+                        >
+                          {cat} <span className="font-medium text-cyan-400">{count}</span>
+                        </span>
+                      ))}
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
