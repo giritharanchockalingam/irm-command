@@ -573,6 +573,14 @@ Management should prioritize control enhancements targeting the highest-impact r
    */
   private handleDataQuery(query: string): string | null {
     const q = query.toLowerCase();
+    const dal = getDataAccess();
+    const risks = dal.getRisks();
+    const controls = dal.getControls();
+    const vendors = dal.getVendors();
+    const issues = dal.getIssues();
+    const kris = dal.getKRIs();
+    const lossEvents = dal.getLossEvents();
+    const regulatoryChanges = dal.getRegulatoryChanges();
 
     // SOC 2 controls
     if ((q.includes('soc') && q.includes('control')) || q.includes('soc 2') || q.includes('soc2') || q.includes('trust services')) {
