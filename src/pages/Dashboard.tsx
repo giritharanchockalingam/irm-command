@@ -44,8 +44,9 @@ const Dashboard: React.FC = () => {
   // ============ COMPUTED VALUES ============
 
   const enterpriseRiskScore = useMemo(() => {
-    const avgRisk =
-      risks.reduce((sum, r) => sum + (r.inherentScore ?? 3.5), 0) / risks.length;
+    const avgRisk = risks.length > 0
+      ? risks.reduce((sum, r) => sum + (r.inherentScore ?? 3.5), 0) / risks.length
+      : 0;
     const trend = Math.random() > 0.5 ? 'up' : 'down';
     return {
       score: (avgRisk * 1.05).toFixed(1),
@@ -84,11 +85,12 @@ const Dashboard: React.FC = () => {
   const vendorRiskMetrics = useMemo(() => {
     const criticalCount = vendors.filter((v) => v.criticality === 'Critical')
       .length;
-    const avgRisk =
-      vendors.reduce((sum, v) => {
-        const riskScore = v.criticality === 'Critical' ? 4.5 : v.criticality === 'High' ? 3.5 : 2;
-        return sum + riskScore;
-      }, 0) / vendors.length;
+    const avgRisk = vendors.length > 0
+      ? vendors.reduce((sum, v) => {
+          const riskScore = v.criticality === 'Critical' ? 4.5 : v.criticality === 'High' ? 3.5 : 2;
+          return sum + riskScore;
+        }, 0) / vendors.length
+      : 0;
     return { index: avgRisk.toFixed(1), critical: criticalCount };
   }, []);
 
@@ -149,7 +151,7 @@ const Dashboard: React.FC = () => {
   const testCoverageMetrics = useMemo(() => {
     const tested = controls.filter((c) => c.effectiveness === 'Effective').length;
     const total = controls.length;
-    const percentage = Math.round((tested / total) * 100);
+    const percentage = total > 0 ? Math.round((tested / total) * 100) : 0;
     return { percentage, tested, total };
   }, []);
 

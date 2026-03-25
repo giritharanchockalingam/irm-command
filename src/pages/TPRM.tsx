@@ -69,9 +69,9 @@ function VendorRegisterView() {
   // Stats calculations
   const totalVendors = vendors.length;
   const criticalVendors = vendors.filter((v) => v.criticality === 'Critical').length;
-  const avgRiskScore = (
-    vendors.reduce((sum, v) => sum + (v.residualRisk || v.inherentRisk), 0) / vendors.length
-  ).toFixed(1);
+  const avgRiskScore = vendors.length > 0
+    ? (vendors.reduce((sum, v) => sum + (v.residualRisk || v.inherentRisk), 0) / vendors.length).toFixed(1)
+    : '0.0';
   const overdueReassessments = vendors.filter((v) => {
     const lastReview = new Date(v.lastAssessmentDate);
     const daysAgo = (Date.now() - lastReview.getTime()) / (1000 * 60 * 60 * 24);
