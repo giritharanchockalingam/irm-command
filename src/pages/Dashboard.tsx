@@ -51,15 +51,17 @@ const Dashboard: React.FC = () => {
   // ============ COMPUTED VALUES ============
 
   const enterpriseRiskScore = useMemo(() => {
-    const avgRisk = risks.length > 0
-      ? risks.reduce((sum, r) => sum + (r.inherentScore ?? 3.5), 0) / risks.length
-      : 0;
-    const trend = Math.random() > 0.5 ? 'up' : 'down';
+    if (risks.length === 0) return { score: '0.0', max: 5.0, trend: 'down' as const, previousScore: '0.0' };
+    // inherentScore = impact × likelihood (range 1–25). Normalize to 0–5 scale.
+    const avgNormalized = risks.reduce((sum, r) => sum + ((r.inherentScore ?? 5) / 5), 0) / risks.length;
+    // Derive a deterministic "previous" score from residualScore average
+    const avgResidual = risks.reduce((sum, r) => sum + ((r.residualScore ?? 3) / 5), 0) / risks.length;
+    const trend = avgNormalized > avgResidual ? 'up' : 'down';
     return {
-      score: (avgRisk * 1.05).toFixed(1),
+      score: Math.min(5, avgNormalized).toFixed(1),
       max: 5.0,
       trend,
-      previousScore: (avgRisk * 0.95).toFixed(1),
+      previousScore: Math.min(5, avgResidual).toFixed(1),
     };
   }, []);
 
@@ -90,13 +92,10 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const vendorRiskMetrics = useMemo(() => {
-    const criticalCount = vendors.filter((v) => v.criticality === 'Critical')
-      .length;
+    const criticalCount = vendors.filter((v) => v.criticality === 'Critical').length;
+    // Use actual inherentRisk field (1–5) from vendor data
     const avgRisk = vendors.length > 0
-      ? vendors.reduce((sum, v) => {
-          const riskScore = v.criticality === 'Critical' ? 4.5 : v.criticality === 'High' ? 3.5 : 2;
-          return sum + riskScore;
-        }, 0) / vendors.length
+      ? vendors.reduce((sum, v) => sum + (v.inherentRisk ?? 3), 0) / vendors.length
       : 0;
     return { index: avgRisk.toFixed(1), critical: criticalCount };
   }, []);
@@ -138,20 +137,45 @@ const Dashboard: React.FC = () => {
       .slice(0, 10);
   }, []);
 
-  const irmMaturityDimensions = useMemo(
-    () => [
-      { name: 'Risk Identification', score: 4.2 },
-      { name: 'Control Effectiveness', score: 3.8 },
-      { name: 'Monitoring', score: 4.1 },
-      { name: 'Reporting', score: 3.5 },
-      { name: 'Governance', score: 4.3 },
-    ],
-    []
-  );
+  const irmMaturityDimensions = useMemo(() => {
+    // Derive maturity scores from actual data rather than hardcoding
+    const totalRisks = risks.length || 1;
+    const totalControls = controls.length || 1;
+    const totalKRIs = kris.length || 1;
+
+    // Risk Identification: % of risks that have been assessed (have a lastAssessmentDate)
+    const assessed = risks.filter(r => r.lastAssessmentDate).length;
+    const riskIdScore = Math.min(5, (assessed / totalRisks) * 5);
+
+    // Control Effectiveness: % of controls rated Effective
+    const effective = controls.filter(c => c.effectiveness === 'Effective').length;
+    const ctrlScore = Math.min(5, (effective / totalControls) * 5);
+
+    // Monitoring: % of KRIs at Normal level (not breaching)
+    const normal = kris.filter(k => k.breachLevel === 'Normal').length;
+    const monScore = Math.min(5, (normal / totalKRIs) * 5);
+
+    // Reporting: based on inverse of open critical/high issues ratio
+    const critHigh = issues.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
+    const repScore = Math.min(5, Math.max(1, 5 - (critHigh / Math.max(issues.length, 1)) * 5));
+
+    // Governance: based on control coverage (controls with linked risks / total controls)
+    const linked = controls.filter(c => c.riskIds && c.riskIds.length > 0).length;
+    const govScore = Math.min(5, (linked / totalControls) * 5);
+
+    return [
+      { name: 'Risk Identification', score: +riskIdScore.toFixed(1) },
+      { name: 'Control Effectiveness', score: +ctrlScore.toFixed(1) },
+      { name: 'Monitoring', score: +monScore.toFixed(1) },
+      { name: 'Reporting', score: +repScore.toFixed(1) },
+      { name: 'Governance', score: +govScore.toFixed(1) },
+    ];
+  }, []);
 
   const actionItemsMetrics = useMemo(() => {
-    const total = issues.length + risks.length;
-    const completed = Math.floor(total * 0.35);
+    // Derive from actual issue statuses — closed/resolved count as completed
+    const total = issues.length;
+    const completed = issues.filter(i => i.status === 'Closed').length;
     return { completed, total };
   }, []);
 
