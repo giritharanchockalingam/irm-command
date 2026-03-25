@@ -67,7 +67,7 @@ export default function RiskNarrativeCard(props: RiskNarrativeCardProps) {
       : 'low and appropriately managed';
 
   return (
-    <div className="bg-navy-900 border border-slate-700 rounded-xl overflow-hidden">
+    <div className="bg-navy-900 border border-slate-700 rounded-xl">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-slate-700 bg-navy-800/50">
         <div className="flex items-center gap-2.5">
